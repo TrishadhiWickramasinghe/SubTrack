@@ -1,53 +1,10 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "lib": ["es2020", "dom", "dom.iterable"],
-    "module": "esnext",
-    "target": "es2020",
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@components/*": [
-        "./src/components/*"
-      ],
-      "@screens/*": [
-        "./src/screens/*"
-      ],
-      "@navigation/*": [
-        "./src/navigation/*"
-      ],
-      "@services/*": [
-        "./src/services/*"
-      ],
-      "@utils/*": [
-        "./src/utils/*"
-      ],
-      "@hooks/*": [
-        "./src/hooks/*"
-      ],
-      "@context/*": [
-        "./src/context/*"
-      ],
-      "@models/*": [
-        "./src/models/*"
-      ],
-      "@config/*": [
-        "./src/config/*"
-      ],
-      "@styles/*": [
-        "./src/styles/*"
-      ],
-      "@assets/*": [
-        "./src/assets/*"
       ]
     }
   },
@@ -56,8 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }
