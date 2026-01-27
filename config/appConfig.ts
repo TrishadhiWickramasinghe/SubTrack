@@ -5,6 +5,49 @@
 
 import { Platform } from 'react-native';
 
+interface FeatureFlags {
+  CORE: Record<string, boolean>;
+  PREMIUM: Record<string, boolean>;
+  DEV: Record<string, boolean>;
+}
+
+interface AppConfig {
+  ENV: {
+    IS_DEVELOPMENT: boolean;
+    IS_PRODUCTION: boolean;
+    IS_TEST: boolean;
+  };
+  APP: {
+    NAME: string;
+    VERSION: string;
+    BUILD_NUMBER: string;
+    BUNDLE_ID: string | null;
+    STORE_URL: Record<string, string>;
+    WEBSITE: string;
+    SUPPORT_EMAIL: string;
+    PRIVACY_POLICY: string;
+    TERMS_OF_SERVICE: string;
+  };
+  FEATURES: FeatureFlags;
+  API: {
+    BASE_URL: string;
+    ENDPOINTS: Record<string, string>;
+    TIMEOUT: number;
+    RETRY_ATTEMPTS: number;
+    CACHE_TTL: number;
+  };
+  NOTIFICATIONS: Record<string, any>;
+  CURRENCY: Record<string, any>;
+  SUBSCRIPTION: Record<string, any>;
+  BUDGET: Record<string, any>;
+  TRIAL: Record<string, any>;
+  STORAGE: Record<string, any>;
+  SECURITY: Record<string, any>;
+  ANALYTICS: Record<string, any>;
+  PERFORMANCE: Record<string, any>;
+  LOCALIZATION: Record<string, any>;
+}
+
 // Environment configuration
 export const ENV = {
   IS_DEVELOPMENT: __DEV__,
@@ -33,7 +76,7 @@ export const APP = {
 };
 
 // Feature flags - Enable/disable features
-export const FEATURES = {
+export const FEATURES: FeatureFlags = {
   // Core features (always enabled)
   CORE: {
     SUBSCRIPTION_MANAGEMENT: true,
@@ -327,8 +370,28 @@ export const LOCALIZATION = {
   },
 };
 
+// Helper function to check if feature is enabled
+export const isFeatureEnabled = (featurePath: string): boolean => {
+  const parts = featurePath.split('.');
+  let current: any = FEATURES;
+  
+  for (const part of parts) {
+    if (current[part] === undefined) {
+      return false;
+    }
+    current = current[part];
+  }
+  
+  return current === true;
+};
+
+// Platform helpers
+export const isIOS = Platform.OS === 'ios';
+export const isAndroid = Platform.OS === 'android';
+export const isWeb = Platform.OS === 'web';
+
 // Export everything
-export default {
+const appConfig: AppConfig = {
   ENV,
   APP,
   FEATURES,
@@ -343,24 +406,6 @@ export default {
   ANALYTICS,
   PERFORMANCE,
   LOCALIZATION,
-  
-  // Helper function to check if feature is enabled
-  isFeatureEnabled: (featurePath) => {
-    const parts = featurePath.split('.');
-    let current = FEATURES;
-    
-    for (const part of parts) {
-      if (current[part] === undefined) {
-        return false;
-      }
-      current = current[part];
-    }
-    
-    return current === true;
-  },
-  
-  // Platform helpers
-  isIOS: Platform.OS === 'ios',
-  isAndroid: Platform.OS === 'android',
-  isWeb: Platform.OS === 'web',
 };
+
+export default appConfig;
