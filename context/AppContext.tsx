@@ -1,16 +1,16 @@
 import NetInfo from '@react-native-community/netinfo';
-import { analyticsService } from '@services/analytics/analyticsService';
-import { syncService } from '@services/backup/cloudSync';
-import { notificationsService } from '@services/notifications/notificationService';
-import cacheStorage from '@services/storage/cacheStorage';
-import settingsStorage from '@services/storage/settingsStorage';
-import subscriptionStorage from '@services/storage/subscriptionStorage';
+import { analyticsService } from '../services/analytics/analyticsService';
+import { syncService } from '../services/backup/cloudSync';
+import { notificationsService } from '../services/notifications/notificationService';
+import cacheStorage from '../services/storage/cacheStorage';
+import settingsStorage from '../services/storage/settingsStorage';
+import subscriptionStorage from '../services/storage/subscriptionStorage';
 import * as SplashScreen from 'expo-splash-screen';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { AppState } from 'react-native';
 
-// Create context
-const AppContext = createContext();
+// Create context with default value
+const AppContext = createContext<any>({});
 
 // Initial state
 const initialState = {
@@ -86,7 +86,7 @@ export const useApp = () => {
 };
 
 // Main provider component
-export const AppProvider = ({ children }) => {
+export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState(initialState);
 
   /**
@@ -163,7 +163,7 @@ export const AppProvider = ({ children }) => {
         isInitialized: true,
         isLoading: false,
         isError: true,
-        errorMessage: error.message,
+        errorMessage: (error as any).message || 'Unknown error',
       }));
       await SplashScreen.hideAsync();
     }
@@ -179,7 +179,7 @@ export const AppProvider = ({ children }) => {
     return () => subscription.remove();
   }, []);
 
-  const handleAppStateChange = useCallback((nextAppState) => {
+  const handleAppStateChange = useCallback((nextAppState: string) => {
     if (state.appState.match(/inactive|background/) && nextAppState === 'active') {
       // App came to foreground
       handleAppForeground();
@@ -214,7 +214,7 @@ export const AppProvider = ({ children }) => {
     const now = new Date().toISOString();
     const sessionStart = new Date(state.appUsage.lastSessionStart || now);
     const sessionEnd = new Date(now);
-    const sessionDuration = (sessionEnd - sessionStart) / 1000; // in seconds
+    const sessionDuration = (sessionEnd.getTime() - sessionStart.getTime()) / 1000; // in seconds
     
     setState(prev => ({
       ...prev,
@@ -226,7 +226,7 @@ export const AppProvider = ({ children }) => {
     }));
     
     // Auto-backup if enabled
-    if (state.settings?.backup.autoBackup) {
+    if ((state.settings as any)?.backup?.autoBackup) {
       await syncService.backupToCloud();
     }
   }, [state.appUsage.lastSessionStart, state.settings]);
@@ -236,7 +236,7 @@ export const AppProvider = ({ children }) => {
    */
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((networkState) => {
+    const unsubscribe = NetInfo.addEventListener((networkState: any) => {
       setState(prev => ({
         ...prev,
         isConnected: networkState.isConnected,
@@ -257,7 +257,7 @@ export const AppProvider = ({ children }) => {
     await syncService.syncPendingOperations();
     
     // Update exchange rates
-    if (state.settings?.currency.autoUpdateRates) {
+    if ((state.settings as any)?.currency?.autoUpdateRates) {
       await updateExchangeRates();
     }
   }, [state.settings]);
@@ -316,9 +316,9 @@ export const AppProvider = ({ children }) => {
       setState(prev => ({
         ...prev,
         settings: {
-          ...prev.settings,
+          ...(prev.settings as any),
           currency: {
-            ...prev.settings.currency,
+            ...(prev.settings as any)?.currency,
             lastUpdate: new Date().toISOString(),
           },
         },
@@ -376,7 +376,7 @@ export const AppProvider = ({ children }) => {
    * SETTINGS MANAGEMENT
    */
 
-  const updateSettings = useCallback(async (newSettings) => {
+  const updateSettings = useCallback(async (newSettings: any) => {
     try {
       await settingsStorage.saveSettings(newSettings);
       
@@ -394,7 +394,7 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  const updateSetting = useCallback(async (path, value) => {
+  const updateSetting = useCallback(async (path: string, value: any) => {
     try {
       await settingsStorage.updateSetting(path, value);
       const updatedSettings = await settingsStorage.getSettings();
@@ -418,7 +418,7 @@ export const AppProvider = ({ children }) => {
    * SUBSCRIPTION MANAGEMENT
    */
 
-  const addSubscription = useCallback(async (subscription) => {
+  const addSubscription = useCallback(async (subscription: any) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
@@ -446,7 +446,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [refreshData]);
 
-  const updateSubscription = useCallback(async (id, updates) => {
+  const updateSubscription = useCallback(async (id: string, updates: any) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
@@ -475,7 +475,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [refreshData]);
 
-  const deleteSubscription = useCallback(async (id) => {
+  const deleteSubscription = useCallback(async (id: string) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
@@ -498,7 +498,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [refreshData]);
 
-  const toggleSubscriptionStatus = useCallback(async (id) => {
+  const toggleSubscriptionStatus = useCallback(async (id: string) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
@@ -526,7 +526,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [refreshData]);
 
-  const addPayment = useCallback(async (subscriptionId, paymentData) => {
+  const addPayment = useCallback(async (subscriptionId: string, paymentData: any) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
@@ -555,15 +555,15 @@ export const AppProvider = ({ children }) => {
    * SEARCH AND FILTER
    */
 
-  const setSearchQuery = useCallback((query) => {
+  const setSearchQuery = useCallback((query: string) => {
     setState(prev => ({ ...prev, searchQuery: query }));
   }, []);
 
-  const setSelectedFilters = useCallback((filters) => {
+  const setSelectedFilters = useCallback((filters: any) => {
     setState(prev => ({ ...prev, selectedFilters: filters }));
   }, []);
 
-  const setSortBy = useCallback((sortBy, sortOrder = 'asc') => {
+  const setSortBy = useCallback((sortBy: string, sortOrder: string = 'asc') => {
     setState(prev => ({ ...prev, sortBy, sortOrder }));
   }, []);
 
@@ -571,15 +571,15 @@ export const AppProvider = ({ children }) => {
    * UI STATE MANAGEMENT
    */
 
-  const setSelectedTab = useCallback((tab) => {
+  const setSelectedTab = useCallback((tab: string) => {
     setState(prev => ({ ...prev, selectedTab: tab }));
   }, []);
 
-  const setIsSearchActive = useCallback((isActive) => {
+  const setIsSearchActive = useCallback((isActive: boolean) => {
     setState(prev => ({ ...prev, isSearchActive: isActive }));
   }, []);
 
-  const setError = useCallback((errorMessage) => {
+  const setError = useCallback((errorMessage: string) => {
     setState(prev => ({ ...prev, isError: true, errorMessage }));
     
     // Auto-clear error after 5 seconds
@@ -592,7 +592,7 @@ export const AppProvider = ({ children }) => {
     setState(prev => ({ ...prev, isError: false, errorMessage: '' }));
   }, []);
 
-  const setIsPerformingHeavyTask = useCallback((isPerforming) => {
+  const setIsPerformingHeavyTask = useCallback((isPerforming: boolean) => {
     setState(prev => ({ ...prev, isPerformingHeavyTask: isPerforming }));
   }, []);
 
@@ -611,7 +611,7 @@ export const AppProvider = ({ children }) => {
         ...data,
         settings: JSON.parse(settings),
         exportDate: new Date().toISOString(),
-        appVersion: state.settings?.app.version || '1.0.0',
+        appVersion: (state.settings as any)?.app?.version || '1.0.0',
       };
       
     } catch (error) {
@@ -622,7 +622,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [state.settings]);
 
-  const importData = useCallback(async (data) => {
+  const importData = useCallback(async (data: any) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
@@ -733,8 +733,8 @@ export const AppProvider = ({ children }) => {
 };
 
 // Higher-order component for app context
-export const withApp = (Component) => {
-  return function WrappedComponent(props) {
+export const withApp = (Component: any) => {
+  return function WrappedComponent(props: any) {
     return (
       <AppProvider>
         <Component {...props} />
