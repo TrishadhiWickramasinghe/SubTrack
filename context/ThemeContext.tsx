@@ -1,9 +1,9 @@
-import settingsStorage from '@services/storage/settingsStorage';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import settingsStorage from '../services/storage/settingsStorage';
+import React, { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { Appearance, useColorScheme } from 'react-native';
 
-// Create context
-const ThemeContext = createContext();
+// Create context with default value
+const ThemeContext = createContext<any>({});
 
 // Default themes
 const LIGHT_THEME = {
@@ -265,7 +265,7 @@ export const useTheme = () => {
 };
 
 // Main provider component
-export const ThemeProvider = ({ children }) => {
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const systemColorScheme = useColorScheme();
   const [theme, setTheme] = useState(LIGHT_THEME);
   const [themeMode, setThemeMode] = useState('light');
@@ -327,7 +327,7 @@ export const ThemeProvider = ({ children }) => {
   /**
    * Apply theme with given parameters
    */
-  const applyTheme = (mode, accent, highContrast = false) => {
+  const applyTheme = (mode: string, accent: string, highContrast: boolean = false) => {
     let baseTheme;
     
     // Select base theme based on mode and contrast
@@ -371,7 +371,7 @@ export const ThemeProvider = ({ children }) => {
   /**
    * Set theme mode
    */
-  const setThemeModeWithSave = async (mode) => {
+  const setThemeModeWithSave = async (mode: string) => {
     try {
       await settingsStorage.updateSetting('theme.mode', mode);
       
@@ -389,7 +389,7 @@ export const ThemeProvider = ({ children }) => {
   /**
    * Set accent color
    */
-  const setAccentColorWithSave = async (color) => {
+  const setAccentColorWithSave = async (color: string) => {
     try {
       await settingsStorage.updateSetting('theme.accentColor', color);
       applyTheme(themeMode, color, isHighContrast);
@@ -414,7 +414,7 @@ export const ThemeProvider = ({ children }) => {
   /**
    * Set custom theme
    */
-  const setCustomTheme = async (customTheme) => {
+  const setCustomTheme = async (customTheme: any) => {
     try {
       await settingsStorage.updateSetting('theme.customTheme', customTheme);
       // For now, just update accent color
@@ -459,7 +459,7 @@ export const ThemeProvider = ({ children }) => {
   /**
    * Create style generator
    */
-  const makeStyles = (stylesCreator) => {
+  const makeStyles = (stylesCreator: (theme: any) => any) => {
     return stylesCreator(theme);
   };
 
@@ -468,20 +468,20 @@ export const ThemeProvider = ({ children }) => {
    */
   
   // Darken a color
-  const darkenColor = (color, percent) => {
+  const darkenColor = (color: string, percent: number) => {
     // Implementation for darkening color
     // This is a simplified version
     return color; // In production, implement proper color manipulation
   };
 
   // Lighten a color
-  const lightenColor = (color, percent) => {
+  const lightenColor = (color: string, percent: number) => {
     // Implementation for lightening color
     return color; // In production, implement proper color manipulation
   };
 
   // Get status color
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
         return theme.colors.success;
@@ -526,8 +526,8 @@ export const ThemeProvider = ({ children }) => {
 };
 
 // Higher-order component for theme context
-export const withTheme = (Component) => {
-  return function WrappedComponent(props) {
+export const withTheme = (Component: any) => {
+  return function WrappedComponent(props: any) {
     return (
       <ThemeProvider>
         <Component {...props} />
@@ -559,8 +559,8 @@ export const useThemeShadows = () => {
 };
 
 // Style generator helper
-export const createStyles = (stylesCreator) => {
-  return (props) => {
+export const createStyles = (stylesCreator: (theme: any, props?: any) => any) => {
+  return (props?: any) => {
     const { theme } = useTheme();
     return stylesCreator(theme, props);
   };
