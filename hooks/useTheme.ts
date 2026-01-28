@@ -3,12 +3,44 @@
 // TODO: Implement theme types
 // import { Theme, ThemeColors } from '@types/theme';
 
-// Stub implementations for missing imports
-const useRNTheme = () => ({
-  isDark: false,
-  colors: { background: '#fff', text: '#000' }
+const useRNTheme = () => ({ 
+  theme: { 
+    colors: {
+      primary: '#007AFF',
+      primaryDark: '#0051D5',
+      secondary: '#5856D6',
+      accent: '#FF3B30',
+      success: '#34C759',
+      warning: '#FF9500',
+      error: '#FF3B30',
+      text: '#000',
+      textSecondary: '#666',
+      textTertiary: '#999',
+      textInverse: '#FFF',
+      background: '#FFF',
+      backgroundSecondary: '#F5F5F5',
+      backgroundTertiary: '#E5E5E5',
+      card: '#FFF',
+      border: '#CCC',
+      disabled: '#CCC',
+      inputBackground: '#F5F5F5',
+    },
+    typography: {
+      fontFamily: { regular: 'System', bold: 'System' },
+      fontSize: { sm: 12, base: 14, lg: 16, xl: 18, '2xl': 24, '3xl': 30, '4xl': 36 },
+      lineHeight: { tight: 1.2, normal: 1.5 },
+    },
+    spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
+    borderRadius: { sm: 4, md: 8, lg: 12, xl: 16 },
+    shadows: { sm: {}, md: {}, lg: {} },
+    animation: {
+      duration: { fast: 100, normal: 200, slow: 300 },
+      easing: { default: 'ease', linear: 'linear' },
+    },
+  },
+  makeStyles: (creator: any) => creator(),
+  isDark: false 
 });
-
 type Theme = any;
 type ThemeColors = any;
 
@@ -319,7 +351,7 @@ export const useTheme = () => {
       duration: typeof options.duration === 'string' 
         ? theme.animation.duration[options.duration] 
         : options.duration || theme.animation.duration.normal,
-      easing: theme.animation.easing[options.easing || 'default'],
+      easing: theme.animation.easing[(options.easing as keyof typeof theme.animation.easing) || 'default'] || 'ease',
       useNativeDriver: options.useNativeDriver !== undefined ? options.useNativeDriver : true,
     };
     
@@ -347,14 +379,14 @@ export const useTheme = () => {
   
   // Get adaptive color
   const adaptiveColor = (colorKey: keyof ThemeColors): string => {
-    const color = theme.colors[colorKey];
+    const color = (theme.colors as any)[colorKey];
     
     // If color is a function, call it with theme mode
     if (typeof color === 'function') {
       return color(contextProps.isDark);
     }
     
-    return color;
+    return color || '#000';
   };
   
   /**

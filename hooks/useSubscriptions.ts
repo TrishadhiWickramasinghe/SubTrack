@@ -1,4 +1,4 @@
-// TODO: Implement AppContext
+// TODO: Implement AppContext  
 // import { useApp } from '@context/AppContext';
 // TODO: Implement CurrencyContext
 // import { useCurrency } from '@context/CurrencyContext';
@@ -10,20 +10,58 @@
 // import subscriptionStorage from '@services/storage/subscriptionStorage';
 // TODO: Implement model types
 // import { Category, Payment, Subscription } from '@types/models';
+
+type Subscription = any;
+type Category = any;
+type Payment = any;
+
+const useApp = () => ({ 
+  settings: { 
+    app: { onboardingComplete: false }, 
+    budget: { categoryLimits: {} },
+    currency: { primary: 'USD' },
+  }, 
+  isConnected: true 
+});
+const useCurrency = () => ({ 
+  convertAmount: (amount: number, fromCur?: string, toCur?: string) => amount, 
+  formatAmountWithConversion: (a: number, from?: string, opts?: any) => '' 
+});
+const analyticsService = { trackEvent: async (event: string, props?: any) => {} };
+const notificationsService = { 
+  sendNotification: async (config: any) => {},
+  scheduleReminder: async (sub: any) => {},
+  cancelReminder: async (id: string) => {},
+  scheduleAllReminders: async (subs: any[]) => {},
+};
+const subscriptionStorage = { 
+  getSubscriptions: async () => [],
+  getCategories: async () => [],
+  getSubscriptionStats: async () => ({ 
+    monthlyTotal: 0,
+    yearlyTotal: 0,
+    totalCount: 0,
+    activeCount: 0,
+    inactiveCount: 0,
+    categoryStats: {},
+    lastUpdated: new Date().toISOString(),
+  }),
+  getUpcomingPayments: async (days: number) => [],
+  saveSubscription: async (sub: any) => sub,
+  deleteSubscription: async (id: string) => {},
+  toggleSubscriptionStatus: async (id: string) => ({} as any),
+  addPayment: async (id: string, payment: any) => payment,
+  getPaymentsBySubscription: async (id: string) => [],
+  getPaymentHistory: async () => [],
+  saveCategory: async (cat: any) => cat,
+  deleteCategory: async (id: string, reassignId?: string) => {},
+  exportData: async () => ({ subscriptions: [], settings: {} }),
+  importData: async (data: any) => {},
+};
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
-// Stub implementations
-const useApp = () => ({ settings: {} });
-const useCurrency = () => ({ convertAmount: (a: number) => a, formatAmount: (a: number) => '$' + a });
-const analyticsService = { trackEvent: async () => {} };
-const notificationsService = { scheduleNotification: async () => {} };
-const subscriptionStorage = { getSubscriptions: async () => [] };
-
 // Type definitions
-type Category = any;
-type Payment = any;
-type Subscription = any;
 export interface SubscriptionStats {
   totalCount: number;
   activeCount: number;
@@ -720,13 +758,13 @@ export const useSubscriptions = (): UseSubscriptionsReturn => {
   const handleClearFilters = useCallback(() => {
     const defaultFilters = {
       category: null,
-      status: 'all' as const,
+      status: 'active',
       billingCycle: null,
       priceRange: null,
     };
     
-    setSelectedFilters(defaultFilters as any);
-    updateFilteredSubscriptions(subscriptions, searchQuery, defaultFilters as any, sortBy, sortOrder);
+    setSelectedFilters({ category: null, status: 'all' as const, billingCycle: null, priceRange: null });
+    updateFilteredSubscriptions(subscriptions, searchQuery, { category: null, status: 'all' as const, billingCycle: null, priceRange: null }, sortBy, sortOrder);
   }, [subscriptions, searchQuery, sortBy, sortOrder, updateFilteredSubscriptions]);
 
   const handleSetSort = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc' = 'asc') => {
