@@ -3,12 +3,18 @@
  * High-level hook for common Supabase operations
  */
 
-import { useSupabase } from '@/context/SupabaseContext';
+// TODO: Implement SupabaseContext
+// import { useSupabase } from '@/context/SupabaseContext';
 import { budgetsService } from '@/services/supabase/budgets';
 import { categoriesService } from '@/services/supabase/categories';
 import { subscriptionsService } from '@/services/supabase/subscriptions';
 import type { Budget, Category, Subscription } from '@/types/supabase';
 import { useEffect, useState } from 'react';
+
+// Stub for useSupabase hook - returns a user object
+const useSupabase = () => ({
+  user: { id: 'stub-user-id' } as any,
+});
 
 interface UseSupabaseDataOptions {
   onError?: (error: string) => void;

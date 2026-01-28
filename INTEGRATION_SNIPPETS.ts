@@ -171,28 +171,27 @@ const checkAuth = async () => {
 // ============================================================================
 // Wrap your Stack component with AuthProvider:
 
-/*
-import { AuthProvider } from '@/context/AuthContext';
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // ... existing code ...
-
-  return (
-    <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          {/* ... existing stack screens ... */}
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </AuthProvider>
-  );
-}
-*/
+// CODE EXAMPLE (commented):
+// import { AuthProvider } from '@/context/AuthContext';
+//
+// export default function RootLayout() {
+//   const colorScheme = useColorScheme();
+//   const [isAuthenticated, setIsAuthenticated] = useState(false);
+//   const [isLoading, setIsLoading] = useState(true);
+//
+//   // ... existing code ...
+//
+//   return (
+//     <AuthProvider>
+//       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+//         <Stack>
+//           {/* ... existing stack screens ... */}
+//         </Stack>
+//         <StatusBar style="auto" />
+//       </ThemeProvider>
+//     </AuthProvider>
+//   );
+// }
 
 // ============================================================================
 // SNIPPET 6: Add signOut Implementation to hooks/useAuth.ts
