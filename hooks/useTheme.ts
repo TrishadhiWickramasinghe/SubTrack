@@ -1,5 +1,16 @@
-import { useTheme as useRNTheme } from '@context/ThemeContext';
-import { Theme, ThemeColors } from '@types/theme';
+// TODO: Implement ThemeContext
+// import { useTheme as useRNTheme } from '@context/ThemeContext';
+// TODO: Implement theme types
+// import { Theme, ThemeColors } from '@types/theme';
+
+// Stub implementations for missing imports
+const useRNTheme = () => ({
+  isDark: false,
+  colors: { background: '#fff', text: '#000' }
+});
+
+type Theme = any;
+type ThemeColors = any;
 
 /**
  * Custom hook for theme management with enhanced features

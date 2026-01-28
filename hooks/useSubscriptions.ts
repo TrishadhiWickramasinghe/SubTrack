@@ -1,13 +1,29 @@
-import { useApp } from '@context/AppContext';
-import { useCurrency } from '@context/CurrencyContext';
-import { analyticsService } from '@services/analytics/analyticsService';
-import { notificationsService } from '@services/notifications/notificationService';
-import subscriptionStorage from '@services/storage/subscriptionStorage';
-import { Category, Payment, Subscription } from '@types/models';
+// TODO: Implement AppContext
+// import { useApp } from '@context/AppContext';
+// TODO: Implement CurrencyContext
+// import { useCurrency } from '@context/CurrencyContext';
+// TODO: Implement analytics service
+// import { analyticsService } from '@services/analytics/analyticsService';
+// TODO: Implement notifications service
+// import { notificationsService } from '@services/notifications/notificationService';
+// TODO: Implement subscription storage
+// import subscriptionStorage from '@services/storage/subscriptionStorage';
+// TODO: Implement model types
+// import { Category, Payment, Subscription } from '@types/models';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
+// Stub implementations
+const useApp = () => ({ settings: {} });
+const useCurrency = () => ({ convertAmount: (a: number) => a, formatAmount: (a: number) => '$' + a });
+const analyticsService = { trackEvent: async () => {} };
+const notificationsService = { scheduleNotification: async () => {} };
+const subscriptionStorage = { getSubscriptions: async () => [] };
+
 // Type definitions
+type Category = any;
+type Payment = any;
+type Subscription = any;
 export interface SubscriptionStats {
   totalCount: number;
   activeCount: number;
