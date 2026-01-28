@@ -619,7 +619,7 @@ export const useSubscriptions = (): UseSubscriptionsReturn => {
     try {
       const allPayments = await subscriptionStorage.getPaymentHistory();
       return allPayments
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, limit);
     } catch (error) {
       console.error('Error getting recent payments:', error);
@@ -720,13 +720,13 @@ export const useSubscriptions = (): UseSubscriptionsReturn => {
   const handleClearFilters = useCallback(() => {
     const defaultFilters = {
       category: null,
-      status: 'active',
+      status: 'all' as const,
       billingCycle: null,
       priceRange: null,
     };
     
-    setSelectedFilters(defaultFilters);
-    updateFilteredSubscriptions(subscriptions, searchQuery, defaultFilters, sortBy, sortOrder);
+    setSelectedFilters(defaultFilters as any);
+    updateFilteredSubscriptions(subscriptions, searchQuery, defaultFilters as any, sortBy, sortOrder);
   }, [subscriptions, searchQuery, sortBy, sortOrder, updateFilteredSubscriptions]);
 
   const handleSetSort = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc' = 'asc') => {
