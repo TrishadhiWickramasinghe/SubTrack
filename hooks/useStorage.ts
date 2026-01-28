@@ -824,7 +824,8 @@ export const useStorage = (): UseStorageReturn => {
   const getBackupData = useCallback(async (source: 'local' | 'cloud', backupId?: string): Promise<BackupData> => {
     if (source === 'cloud') {
       // Get from cloud service
-      return await syncService.downloadBackup(backupId);
+      const result = await syncService.downloadBackup(backupId || '');
+      return result as BackupData;
     } else {
       // Get from local storage
       if (backupId) {
