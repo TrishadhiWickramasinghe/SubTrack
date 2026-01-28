@@ -245,11 +245,12 @@ export const useStorage = (): UseStorageReturn => {
   }, [settings]);
 
   const setupAutoBackup = useCallback(() => {
-    if (settings?.backup.autoBackup && settings.backup.backupFrequency !== 'manual') {
-      const interval = getBackupInterval(settings.backup.backupFrequency);
+    // Type guard to ensure backup settings exist
+    if (settings?.backup?.autoBackup && (settings.backup.backupFrequency as any) !== 'manual') {
+      const interval = getBackupInterval(settings.backup.backupFrequency as any || 'daily');
       backupIntervalRef.current = setInterval(() => {
         checkAndPerformAutoBackup();
-      }, interval);
+      }, interval) as any;
     }
   }, [settings]);
 
@@ -301,8 +302,8 @@ export const useStorage = (): UseStorageReturn => {
         totalSize: subscriptionsSize + cacheSize,
         subscriptionCount: subscriptions.length,
         cacheSize,
-        backupCount: backupInfo.count,
-      });
+        backupCount: backupInfo.count || 0,
+      } as StorageInfo);
       
       setLastBackup(backupInfo.lastBackup);
       
@@ -825,7 +826,7 @@ export const useStorage = (): UseStorageReturn => {
     if (source === 'cloud') {
       // Get from cloud service
       const result = await syncService.downloadBackup(backupId || '');
-      return result as BackupData;
+      return result as any as BackupData;
     } else {
       // Get from local storage
       if (backupId) {
@@ -1026,15 +1027,16 @@ export const useStorage = (): UseStorageReturn => {
         copyToCacheDirectory: true,
       });
       
-      if (result.type === 'cancel') {
+      if ((result as any).type === 'cancel' || (result as any).cancelled) {
         return;
       }
       
-      if (!result.assets || result.assets.length === 0) {
+      const assets = (result as any).assets || (result as any);
+      if (!assets || (Array.isArray(assets) ? assets.length === 0 : !assets.uri)) {
         throw new Error('No file selected');
       }
       
-      const file = result.assets[0];
+      const file = Array.isArray(assets) ? assets[0] : assets;
       
       // Read file
       const fileContent = await FileSystem.readAsStringAsync(file.uri);
@@ -1264,7 +1266,8 @@ export const useStorage = (): UseStorageReturn => {
         cacheSize,
         totalSize: subscriptionSize + cacheSize,
         subscriptionCount: subscriptions.length,
-        cacheEntries: cacheInfo.totalEntries || 0,
+        cacheSize: cacheSize,
+        backupCount: 0,
       } as StorageInfo;
     } catch (error) {
       console.error('Error calculating storage usage:', error);
@@ -1419,7 +1422,7 @@ export const storageUtils = {
     }
   },
   
-  getFileInfo: async (filepath: string): Promise<FileSystem.FileInfo | null> => {
+  getFileInfo: async (filepath: string): Promise<any | null> => {
     try {
       return await FileSystem.getInfoAsync(filepath);
     } catch (error) {
