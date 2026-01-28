@@ -88,7 +88,7 @@ export default function SignUpScreen() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       Alert.alert('Success', 'Account created! Please verify your email.');
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/home');
     } catch (error) {
       Alert.alert('Sign Up Failed', 'An error occurred during registration');
     } finally {

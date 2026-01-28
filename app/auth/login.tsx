@@ -52,7 +52,7 @@ export default function LoginScreen() {
 
       Alert.alert('Success', 'Logged in successfully!');
       // Navigate to main app - root layout will handle redirect
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/home');
     } catch (error) {
       Alert.alert('Login Failed', 'Invalid email or password');
     } finally {
