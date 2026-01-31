@@ -1,4 +1,5 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -10,7 +11,6 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type RadioButtonVariant = 'filled' | 'outlined' | 'dot' | 'icon';
 export type RadioButtonSize = 'small' | 'medium' | 'large';
@@ -168,14 +168,14 @@ const RadioButton: React.FC<RadioButtonProps> = ({
 
   // Get colors
   const getColors = () => {
-    const unselectedBg = unselectedColor || colors.surface;
+    const unselectedBg = unselectedColor || colors.neutral[0];
     const selectedBg = selectedColor || color;
-    const unselectedBorder = borderColor || colors.border;
+    const unselectedBorder = borderColor || colors.neutral[200];
     const selectedBorder = selectedBorderColor || color;
-    const dot = dotColor || colors.surface;
-    const selectedDot = selectedDotColor || colors.surface;
-    const icon = iconColor || colors.text;
-    const selectedIcon = selectedIconColor || colors.surface;
+    const dot = dotColor || colors.neutral[0];
+    const selectedDot = selectedDotColor || colors.neutral[0];
+    const icon = iconColor || colors.neutral[900];
+    const selectedIcon = selectedIconColor || colors.neutral[0];
 
     return {
       unselectedBg,
@@ -348,7 +348,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
     return (
       <Animated.View
         style={[
-          styles.radioContainer,
+          styles.radioContainer as any,
           radioStyle,
           {
             transform: [
@@ -359,12 +359,12 @@ const RadioButton: React.FC<RadioButtonProps> = ({
           selected && selectedStyle,
           disabled && [styles.disabled, disabledStyle],
           radioStyle,
-        ]}>
+        ] as any}>
         {/* Dot variant */}
         {variant === 'dot' && showDot && selected && (
           <Animated.View
             style={[
-              styles.dot,
+              styles.dot as any,
               {
                 width: dotSize,
                 height: dotSize,
@@ -373,7 +373,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
                 transform: [{ scale: checkmarkScale }],
                 opacity: checkmarkOpacity,
               },
-            ]}
+            ] as any}
           />
         )}
 
@@ -381,14 +381,14 @@ const RadioButton: React.FC<RadioButtonProps> = ({
         {variant === 'icon' && showIcon && (
           <Animated.View
             style={[
-              styles.iconContainer,
+              styles.iconContainer as any,
               {
                 transform: [{ scale: checkmarkScale }],
                 opacity: checkmarkOpacity,
               },
-            ]}>
+            ] as any}>
             <Icon
-              name={selected ? selectedIcon : icon}
+              name={(selected ? selectedIcon : icon) as any}
               size={iconSize}
               color={selected ? colorConfig.selectedIcon : colorConfig.icon}
             />
@@ -399,14 +399,14 @@ const RadioButton: React.FC<RadioButtonProps> = ({
         {(variant === 'filled' || variant === 'outlined') && showIcon && selected && (
           <Animated.View
             style={[
-              styles.iconContainer,
+              styles.iconContainer as any,
               {
                 transform: [{ scale: checkmarkScale }],
                 opacity: checkmarkOpacity,
               },
-            ]}>
+            ] as any}>
             <Icon
-              name={selectedIcon}
+              name={selectedIcon as any}
               size={iconSize}
               color={colorConfig.selectedIcon}
             />
@@ -420,43 +420,43 @@ const RadioButton: React.FC<RadioButtonProps> = ({
   const renderLabel = () => {
     if (!label && !description) return null;
 
-    const labelColor = disabled ? colors.textDisabled : error ? colors.error : colors.text;
-    const descriptionColor = disabled ? colors.textDisabled : colors.textSecondary;
+    const labelColor = disabled ? colors.neutral[300] : error ? colors.error[500] : colors.neutral[900];
+    const descriptionColor = disabled ? colors.neutral[300] : colors.neutral[500];
 
     return (
-      <View style={styles.labelContainer}>
+      <View style={styles.labelContainer as any}>
         {label && (
           <Text
             style={[
-              styles.label,
+              styles.label as any,
               {
                 fontSize: sizeConfig.fontSize,
                 color: labelColor,
-                fontFamily: fonts.medium,
+                fontFamily: fonts.medium.fontFamily,
               },
               labelStyle,
-              error && [styles.errorText, errorStyle],
-            ]}>
+              error && [styles.errorText as any, errorStyle],
+            ] as any}>
             {label}
-            {required && <Text style={styles.required}> *</Text>}
+            {required && <Text style={styles.required as any}> *</Text>}
           </Text>
         )}
         {description && (
           <Text
             style={[
-              styles.description,
+              styles.description as any,
               {
                 fontSize: sizeConfig.fontSize - 2,
                 color: descriptionColor,
                 marginTop: label ? 2 : 0,
               },
               descriptionStyle,
-            ]}>
+            ] as any}>
             {description}
           </Text>
         )}
         {error && !label && (
-          <Text style={[styles.errorText, errorStyle]}>
+          <Text style={[styles.errorText as any, errorStyle] as any}>
             {error}
           </Text>
         )}
@@ -526,7 +526,7 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
   selectedValue,
   onValueChange,
   direction = 'vertical',
-  spacing = spacing.md,
+  spacing: groupSpacing = spacing.md,
   style,
   containerStyle,
   testID = 'radio-group',
@@ -538,10 +538,10 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
       return React.cloneElement(child as React.ReactElement<any>, {
-        selected: child.props.value === selectedValue,
-        onSelect: () => handleValueChange(child.props.value),
+        selected: (child.props as any).value === selectedValue,
+        onSelect: () => handleValueChange((child.props as any).value),
         group: true,
-        groupSpacing: spacing,
+        groupSpacing: groupSpacing,
       });
     }
     return child;
@@ -550,9 +550,9 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
   return (
     <View
       style={[
-        styles.groupContainer,
+        styles.groupContainer as any,
         direction === 'horizontal' ? styles.groupHorizontal : styles.groupVertical,
-        { gap: spacing },
+        { gap: groupSpacing },
         containerStyle,
       ]}
       testID={testID}>
@@ -592,18 +592,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontFamily: fonts.medium,
+    fontFamily: fonts.medium.fontFamily,
   },
   description: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
   },
   required: {
-    color: colors.error,
+    color: colors.error[500],
   },
   errorText: {
-    color: colors.error,
+    color: colors.error[500],
     fontSize: 12,
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
     marginTop: 2,
   },
   groupContainer: {

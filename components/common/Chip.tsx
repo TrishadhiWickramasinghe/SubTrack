@@ -1,4 +1,5 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import {
     Animated,
@@ -10,7 +11,6 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type ChipVariant = 'filled' | 'outlined' | 'ghost';
 export type ChipColor = 
@@ -123,52 +123,52 @@ const Chip: React.FC<ChipProps> = ({
   const getColorConfig = () => {
     const colorConfigs = {
       primary: {
-        bg: colors.primary,
-        text: colors.surface,
-        border: colors.primary,
-        light: colors.primaryLight,
+        bg: colors.primary[600] as any,
+        text: colors.neutral[0],
+        border: colors.primary[600] as any,
+        light: colors.primary[100],
       },
       secondary: {
-        bg: colors.secondary,
-        text: colors.surface,
-        border: colors.secondary,
-        light: colors.secondaryLight,
+        bg: colors.secondary[600] as any,
+        text: colors.neutral[0],
+        border: colors.secondary[600] as any,
+        light: colors.secondary[100],
       },
       success: {
-        bg: colors.success,
-        text: colors.surface,
-        border: colors.success,
-        light: colors.successLight,
+        bg: colors.success[500] as any,
+        text: colors.neutral[0],
+        border: colors.success[500] as any,
+        light: colors.success[100],
       },
       error: {
-        bg: colors.error,
-        text: colors.surface,
-        border: colors.error,
-        light: colors.errorLight,
+        bg: colors.error[500] as any,
+        text: colors.neutral[0],
+        border: colors.error[500] as any,
+        light: colors.error[100],
       },
       warning: {
-        bg: colors.warning,
-        text: colors.surface,
-        border: colors.warning,
-        light: colors.warningLight,
+        bg: colors.warning[500] as any,
+        text: colors.neutral[0],
+        border: colors.warning[500] as any,
+        light: colors.warning[100],
       },
       info: {
-        bg: colors.info,
-        text: colors.surface,
-        border: colors.info,
-        light: colors.infoLight,
+        bg: colors.info[500] as any,
+        text: colors.neutral[0],
+        border: colors.info[500] as any,
+        light: colors.info[100],
       },
       default: {
-        bg: colors.surfaceVariant,
-        text: colors.text,
-        border: colors.border,
-        light: colors.surfaceVariant,
+        bg: colors.neutral[100],
+        text: colors.neutral[900],
+        border: colors.neutral[200],
+        light: colors.neutral[100],
       },
       custom: {
-        bg: backgroundColor || colors.surfaceVariant,
-        text: textColor || colors.text,
-        border: borderColor || colors.border,
-        light: backgroundColor ? `${backgroundColor}40` : colors.surfaceVariant,
+        bg: backgroundColor || colors.neutral[100],
+        text: textColor || colors.neutral[900],
+        border: borderColor || colors.neutral[200],
+        light: backgroundColor ? `${backgroundColor}40` : colors.neutral[100],
       },
     };
 
@@ -248,11 +248,11 @@ const Chip: React.FC<ChipProps> = ({
     }
   };
 
-  const variantStyles = getVariantStyles();
+  const variantStyles = getVariantStyles() as any;
 
   // Get text color
   const getTextColor = () => {
-    if (disabled) return colors.textDisabled;
+    if (disabled) return colors.neutral[300];
     
     if (selectedTextColor && selected) return selectedTextColor;
     
@@ -273,7 +273,7 @@ const Chip: React.FC<ChipProps> = ({
   // Get icon color
   const getIconColor = () => {
     if (iconColor) return iconColor;
-    if (disabled) return colors.textDisabled;
+    if (disabled) return colors.neutral[300];
     return getTextColor();
   };
 
@@ -339,9 +339,9 @@ const Chip: React.FC<ChipProps> = ({
     return (
       <View style={[styles.iconContainer, iconStyle]}>
         <Icon
-          name={icon}
+          name={icon as any}
           size={iconSize || sizeConfig.iconSize}
-          color={getIconColor()}
+          color={getIconColor() as any}
         />
       </View>
     );
@@ -365,9 +365,9 @@ const Chip: React.FC<ChipProps> = ({
     return (
       <View style={[styles.checkmarkContainer, iconStyle]}>
         <Icon
-          name={checkmarkIcon}
+          name={checkmarkIcon as any}
           size={iconSize || sizeConfig.iconSize}
-          color={getIconColor()}
+          color={getIconColor() as any}
         />
       </View>
     );
@@ -384,9 +384,9 @@ const Chip: React.FC<ChipProps> = ({
         disabled={disabled}
         hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
         <Icon
-          name={closeIcon}
+          name={closeIcon as any}
           size={iconSize || sizeConfig.iconSize}
-          color={closeIconColor || getIconColor()}
+          color={(closeIconColor || getIconColor()) as any}
         />
       </TouchableOpacity>
     );
@@ -474,8 +474,8 @@ const Chip: React.FC<ChipProps> = ({
           styles.text,
           {
             fontSize: sizeConfig.fontSize,
-            color: getTextColor(),
-            fontFamily: fonts.medium,
+            color: getTextColor() as any,
+            fontFamily: fonts.medium.fontFamily,
             marginHorizontal: leftContent.length > 0 || rightContent.length > 0 ? spacing.xs : 0,
           },
           textStyle,

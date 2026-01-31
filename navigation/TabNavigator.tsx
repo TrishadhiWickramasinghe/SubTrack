@@ -1,10 +1,10 @@
+import { colors } from '@/config/theme';
 import { Badge } from '@components/common/Badge';
-import { colors } from '@config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useTheme } from '@hooks/useTheme';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Import stack navigators
 import AnalyticsStackNavigator from './AnalyticsStackNavigator';

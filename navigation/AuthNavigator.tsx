@@ -1,10 +1,10 @@
-import { colors, spacing } from '@config/theme';
+import { colors, spacing } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useTheme } from '@hooks/useTheme';
 import { HeaderBackButton } from '@react-navigation/elements';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Import auth screens
 import ForgotPasswordScreen from '@screens/auth/ForgotPasswordScreen';

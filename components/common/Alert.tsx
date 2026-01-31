@@ -1,5 +1,5 @@
 import { colors, fonts, spacing } from '@/config/theme';
-import { BlurView } from '@react-native-community/blur';
+import { BlurView } from 'expo-blur';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,

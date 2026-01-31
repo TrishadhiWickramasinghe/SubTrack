@@ -1,4 +1,5 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -12,7 +13,6 @@ import {
     View,
     ViewStyle
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type SwipeDirection = 'left' | 'right' | 'both';
 export type SwipeActionType = 'default' | 'destructive' | 'secondary' | 'custom';
@@ -221,7 +221,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
         const percentage = parseFloat(action.width) / 100;
         leftWidth += screenWidth * percentage;
       } else {
-        leftWidth += action.width || 80;
+        leftWidth += (action.width as number) || 80;
       }
     });
 
@@ -230,7 +230,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
         const percentage = parseFloat(action.width) / 100;
         rightWidth += screenWidth * percentage;
       } else {
-        rightWidth += action.width || 80;
+        rightWidth += (action.width as number) || 80;
       }
     });
 
@@ -326,7 +326,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
   // Get action styles based on type
   const getActionStyle = (action: SwipeAction) => {
     const baseStyle: ViewStyle = {
-      backgroundColor: action.backgroundColor || getDefaultActionColor(action.type),
+      backgroundColor: action.backgroundColor || (getDefaultActionColor(action.type) as unknown as string),
     };
 
     return baseStyle;
@@ -347,8 +347,8 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
 
   const getActionTextColor = (action: SwipeAction) => {
     if (action.textColor) return action.textColor;
-    if (action.type === 'destructive') return colors.surface;
-    return colors.surface;
+    if (action.type === 'destructive') return colors.neutral[0];
+    return colors.neutral[0];
   };
 
   const getActionIconColor = (action: SwipeAction) => {
@@ -376,7 +376,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
         activeOpacity={0.7}>
         {action.icon && (
           <Icon
-            name={action.icon}
+            name={action.icon as any}
             size={24}
             color={getActionIconColor(action)}
             style={styles.actionIcon}
@@ -402,7 +402,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
 
     return (
       <View style={[
-        styles.actionsContainer,
+        styles.actionsContainer as any,
         isLeft ? styles.leftActions : styles.rightActions,
         actionContainerStyle,
       ]}>
@@ -453,7 +453,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
           activeOpacity={1}>
           <Animated.View
             style={[
-              styles.backdrop,
+              styles.backdrop as any,
               {
                 backgroundColor: backdropColor,
                 opacity: backdropOpacityAnim,
@@ -469,7 +469,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
       {/* Content */}
       <Animated.View
         style={[
-          styles.contentContainer,
+          styles.contentContainer as any,
           {
             transform: [{ translateX }],
           },
@@ -493,7 +493,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   container: {
     position: 'relative',
     overflow: 'hidden',
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     zIndex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.neutral[0],
   },
   actionsContainer: {
     position: 'absolute',
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 12,
-    fontFamily: fonts.medium,
+    fontFamily: fonts.medium.fontFamily,
     textAlign: 'center',
   },
 });

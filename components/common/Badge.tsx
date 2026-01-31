@@ -1,4 +1,5 @@
 import { colors, fonts } from '@/config/theme';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import React from 'react';
 import {
     Animated,
@@ -103,51 +104,51 @@ const Badge: React.FC<BadgeProps> = ({
     const colorConfigs = {
       primary: {
         bg: colors.primary,
-        text: colors.surface,
+        text: colors.neutral[0],
         border: colors.primary,
-        light: colors.primaryLight,
+        light: colors.primary[100],
       },
       secondary: {
         bg: colors.secondary,
-        text: colors.surface,
+        text: colors.neutral[0],
         border: colors.secondary,
-        light: colors.secondaryLight,
+        light: colors.secondary[100],
       },
       success: {
         bg: colors.success,
-        text: colors.surface,
+        text: colors.neutral[0],
         border: colors.success,
-        light: colors.successLight,
+        light: colors.success[100],
       },
       error: {
         bg: colors.error,
-        text: colors.surface,
+        text: colors.neutral[0],
         border: colors.error,
-        light: colors.errorLight,
+        light: colors.error[100],
       },
       warning: {
         bg: colors.warning,
-        text: colors.surface,
+        text: colors.neutral[0],
         border: colors.warning,
-        light: colors.warningLight,
+        light: colors.warning[100],
       },
       info: {
         bg: colors.info,
-        text: colors.surface,
+        text: colors.neutral[0],
         border: colors.info,
-        light: colors.infoLight,
+        light: colors.info[100],
       },
       default: {
-        bg: colors.surfaceVariant,
-        text: colors.text,
-        border: colors.border,
-        light: colors.surfaceVariant,
+        bg: colors.neutral[100],
+        text: colors.neutral[900],
+        border: colors.neutral[200],
+        light: colors.neutral[100],
       },
       custom: {
         bg: backgroundColor || colors.primary,
-        text: textColor || colors.surface,
+        text: textColor || colors.neutral[0],
         border: borderColor || backgroundColor || colors.primary,
-        light: backgroundColor ? `${backgroundColor}40` : colors.primaryLight,
+        light: backgroundColor ? `${backgroundColor}40` : colors.primary[100],
       },
     };
 
@@ -242,9 +243,9 @@ const Badge: React.FC<BadgeProps> = ({
   const getTextColor = () => {
     if (textColor) return textColor;
     if (variant === 'outlined' || variant === 'text') {
-      return colorConfig.text === colors.surface ? colorConfig.border : colorConfig.text;
+      return colorConfig.text === colors.neutral[0] ? (typeof colorConfig.border === 'string' ? colorConfig.border : colors.neutral[900]) : colorConfig.text;
     }
-    return colorConfig.text;
+    return typeof colorConfig.text === 'string' ? colorConfig.text : colors.neutral[900];
   };
 
   // Format count display
@@ -279,9 +280,9 @@ const Badge: React.FC<BadgeProps> = ({
             styles.text,
             {
               fontSize: sizeConfig.fontSize,
-              color: getTextColor(),
+              color: typeof getTextColor() === 'string' ? getTextColor() : colors.neutral[900],
               fontWeight: 'bold',
-            },
+            } as any,
             textStyle,
           ]}>
           {displayCount}
@@ -294,10 +295,10 @@ const Badge: React.FC<BadgeProps> = ({
         <>
           {icon && iconPosition === 'left' && (
             <MaterialCommunityIcons
-              name={icon}
+              name={icon as any}
               size={iconSize || sizeConfig.iconSize}
-              color={iconColor || getTextColor()}
-              style={styles.leftIcon}
+              color={iconColor || (typeof getTextColor() === 'string' ? getTextColor() : colors.neutral[900])}
+              style={styles.leftIcon as any}
             />
           )}
           <Text
@@ -305,19 +306,19 @@ const Badge: React.FC<BadgeProps> = ({
               styles.text,
               {
                 fontSize: sizeConfig.fontSize,
-                color: getTextColor(),
-                fontFamily: fonts.medium,
-              },
+                color: typeof getTextColor() === 'string' ? getTextColor() : colors.neutral[900],
+                fontFamily: fonts.medium.fontFamily,
+              } as any,
               textStyle,
             ]}>
             {text}
           </Text>
           {icon && iconPosition === 'right' && (
             <MaterialCommunityIcons
-              name={icon}
+              name={icon as any}
               size={iconSize || sizeConfig.iconSize}
-              color={iconColor || getTextColor()}
-              style={styles.rightIcon}
+              color={iconColor || (typeof getTextColor() === 'string' ? getTextColor() : colors.neutral[900])}
+              style={styles.rightIcon as any}
             />
           )}
         </>
@@ -331,14 +332,14 @@ const Badge: React.FC<BadgeProps> = ({
   const renderDot = () => {
     if (!showDot && variant !== 'dot') return null;
 
-    const dotStyles = [
+    const dotStyles: any[] = [
       styles.dot,
       {
         width: dotSize || sizeConfig.dotSize,
         height: dotSize || sizeConfig.dotSize,
         borderRadius: (dotSize || sizeConfig.dotSize) / 2,
-        backgroundColor: dotColor || colorConfig.bg,
-      },
+        backgroundColor: dotColor || (typeof colorConfig.bg === 'string' ? colorConfig.bg : colors.primary[500]),
+      } as any,
       getDotPositionStyle(),
       dotStyle,
     ];
@@ -427,30 +428,30 @@ const Badge: React.FC<BadgeProps> = ({
   const BadgeContent = () => (
     <Animated.View
       style={[
-        styles.container,
-        variantStyles,
+        styles.container as any,
+        { ...variantStyles } as any,
         {
           borderRadius,
           paddingVertical: variant === 'dot' || variant === 'text' ? 0 : sizeConfig.paddingVertical,
           paddingHorizontal: variant === 'dot' || variant === 'text' ? 0 : sizeConfig.paddingHorizontal,
           opacity: disabled ? 0.6 : 1,
           transform: [{ scale: scaleAnim }],
-        },
+        } as any,
         containerDimensions,
         containerStyle,
-      ]}
+      ] as any}
       testID={testID}>
       {renderContent()}
       {renderDot()}
       {closable && onClose && (
         <TouchableOpacity
-          style={styles.closeButton}
+          style={styles.closeButton as any}
           onPress={onClose}
           hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
           <MaterialCommunityIcons
-            name={closeIcon}
+            name={closeIcon as any}
             size={sizeConfig.iconSize}
-            color={closeIconColor || getTextColor()}
+            color={closeIconColor || (typeof getTextColor() === 'string' ? getTextColor() : colors.neutral[900])}
           />
         </TouchableOpacity>
       )}
@@ -481,9 +482,9 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   text: {
-    fontFamily: fonts.medium,
+    fontFamily: fonts.medium.fontFamily,
     textAlign: 'center',
-  },
+  } as any,
   leftIcon: {
     marginRight: 4,
   },
@@ -493,8 +494,8 @@ const styles = StyleSheet.create({
   dot: {
     position: 'absolute',
     borderWidth: 2,
-    borderColor: colors.surface,
-  },
+    borderColor: colors.neutral[0],
+  } as any,
   closeButton: {
     marginLeft: 4,
   },

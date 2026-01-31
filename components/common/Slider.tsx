@@ -1,18 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { colors, fonts } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import React, { useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-  PanResponder,
-  ViewStyle,
-  TextStyle,
-  LayoutChangeEvent,
-  Dimensions,
+    Animated,
+    Dimensions,
+    LayoutChangeEvent,
+    PanResponder,
+    StyleSheet,
+    Text,
+    TextStyle,
+    View,
+    ViewStyle
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { colors, spacing, fonts } from '@config/theme';
 
 export type SliderVariant = 'default' | 'range' | 'vertical' | 'stepped';
 export type SliderSize = 'small' | 'medium' | 'large';
@@ -98,11 +97,11 @@ const Slider: React.FC<SliderProps | RangeSliderProps> = (props) => {
     thumbColor = colors.primary,
     thumbSize,
     thumbIcon = 'circle',
-    thumbIconColor = colors.surface,
+    thumbIconColor = colors.neutral[0],
     thumbIconSize,
-    trackColor = colors.surfaceVariant,
+    trackColor = colors.neutral[100],
     minimumTrackColor = colors.primary,
-    maximumTrackColor = colors.surfaceVariant,
+    maximumTrackColor = colors.neutral[100],
     trackHeight,
     showValue = true,
     valuePosition = 'top',
@@ -110,7 +109,7 @@ const Slider: React.FC<SliderProps | RangeSliderProps> = (props) => {
     valueStyle,
     showMarks = false,
     marks,
-    markColor = colors.border,
+    markColor = colors.neutral[200],
     markSize = 4,
     showLabels = false,
     labelPosition = 'bottom',
@@ -118,7 +117,7 @@ const Slider: React.FC<SliderProps | RangeSliderProps> = (props) => {
     maxLabel,
     labelStyle,
     showSteps = false,
-    stepColor = colors.border,
+    stepColor = colors.neutral[200],
     stepSize = 2,
     animated = true,
     animationDuration = 200,
@@ -369,7 +368,7 @@ const Slider: React.FC<SliderProps | RangeSliderProps> = (props) => {
         height: thumbSizeCalculated,
         borderRadius: thumbStyle === 'circle' ? thumbSizeCalculated / 2 : 
                     thumbStyle === 'square' ? 4 : thumbSizeCalculated / 2,
-        backgroundColor: thumbColor,
+        backgroundColor: thumbColor as any,
         transform: [
           { translateX: vertical ? 0 : position - thumbSizeCalculated / 2 },
           { translateY: vertical ? position - thumbSizeCalculated / 2 : 0 },
@@ -395,7 +394,7 @@ const Slider: React.FC<SliderProps | RangeSliderProps> = (props) => {
           style={thumbStyles}
           onLayout={index === 0 ? handleThumbLayout : undefined}>
           <Icon
-            name={thumbIcon}
+            name={thumbIcon as any}
             size={thumbIconSize || sizeConfig.thumbIconSize}
             color={thumbIconColor}
           />
@@ -434,8 +433,8 @@ const Slider: React.FC<SliderProps | RangeSliderProps> = (props) => {
       styles.value,
       {
         fontSize: sizeConfig.valueFontSize,
-        color: colors.text,
-        fontFamily: fonts.medium,
+        color: colors.neutral[900],
+        fontFamily: fonts.medium.fontFamily,
       },
       valueStyle,
     ];
@@ -537,8 +536,8 @@ const Slider: React.FC<SliderProps | RangeSliderProps> = (props) => {
       styles.label,
       {
         fontSize: sizeConfig.fontSize,
-        color: colors.textSecondary,
-        fontFamily: fonts.regular,
+        color: colors.neutral[500],
+        fontFamily: fonts.regular.fontFamily,
       },
       labelStyle,
     ];

@@ -265,17 +265,17 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
   };
 
   const getBorderColor = () => {
-    if (error) return colors.error;
-    if (success) return colors.success;
-    if (isOpen) return colors.primary;
-    if (disabled) return colors.borderDisabled;
-    return colors.border;
+    if (error) return colors.error[500];
+    if (success) return colors.success[500];
+    if (isOpen) return colors.primary[500];
+    if (disabled) return colors.neutral[300];
+    return colors.neutral[200];
   };
 
   const getBackgroundColor = () => {
-    if (variant === 'filled') return colors.surfaceVariant;
-    if (disabled) return colors.disabled;
-    return colors.surface;
+    if (variant === 'filled') return colors.neutral[100];
+    if (disabled) return colors.neutral[50];
+    return colors.neutral[0];
   };
 
   const getHeight = () => {
@@ -323,7 +323,7 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
               item.disabled && styles.checkboxDisabled,
             ]}>
               {isSelected && (
-                <MaterialCommunityIcons name="check" size={14} color={colors.surface} />
+                <MaterialCommunityIcons name="check" size={14} color={colors.neutral[0]} />
               )}
             </View>
           </View>
@@ -331,9 +331,9 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
 
         {item.icon && (
           <MaterialCommunityIcons
-            name={item.icon}
+            name={item.icon as any}
             size={20}
-            color={item.iconColor || colors.textSecondary}
+            color={item.iconColor || colors.neutral[500]}
             style={styles.itemIcon}
           />
         )}
@@ -352,7 +352,7 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
         )}
 
         {isSelected && !multiSelect && (
-          <MaterialCommunityIcons name="check" size={20} color={colors.primary} style={styles.selectedIcon} />
+          <MaterialCommunityIcons name="check" size={20} color={colors.primary[500]} style={styles.selectedIcon} />
         )}
       </TouchableOpacity>
     );
@@ -405,7 +405,7 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
               styles.triggerText,
               {
                 fontSize: getFontSize(),
-                color: disabled ? colors.textDisabled : colors.text,
+                color: disabled ? colors.neutral[300] : colors.neutral[900],
               },
               !selectedValue && !selectedValues?.length && [styles.placeholder, placeholderStyle],
             ]}
@@ -419,14 +419,14 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
                 onPress={handleClear}
                 style={styles.clearButton}
                 hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-                <MaterialCommunityIcons name="close-circle" size={18} color={colors.textSecondary} />
+                <MaterialCommunityIcons name="close-circle" size={18} color={colors.neutral[500]} />
               </TouchableOpacity>
             )}
             <Animated.View style={{ transform: [{ rotate: rotateInterpolation }] }}>
               <MaterialCommunityIcons
-                name={icon}
+                name={icon as any}
                 size={24}
-                color={iconColor || (disabled ? colors.textDisabled : colors.textSecondary)}
+                color={iconColor || (disabled ? colors.neutral[300] : colors.neutral[500])}
               />
             </Animated.View>
           </View>
@@ -464,18 +464,18 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
             ]}>
             {searchable && (
               <View style={styles.searchContainer}>
-                <MaterialCommunityIcons name="magnify" size={20} color={colors.textSecondary} />
+                <MaterialCommunityIcons name="magnify" size={20} color={colors.neutral[500]} />
                 <TextInput
                   style={styles.searchInput}
                   placeholder={searchPlaceholder}
-                  placeholderTextColor={colors.textDisabled}
+                  placeholderTextColor={colors.neutral[300]}
                   value={searchText}
                   onChangeText={setSearchText}
                   autoFocus={false}
                 />
                 {searchText && (
                   <TouchableOpacity onPress={() => setSearchText('')}>
-                    <MaterialCommunityIcons name="close-circle" size={18} color={colors.textSecondary} />
+                    <MaterialCommunityIcons name="close-circle" size={18} color={colors.neutral[500]} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -497,7 +497,7 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
                 ))
               ) : (
                 <View style={styles.emptyContainer}>
-                  <MaterialCommunityIcons name="file-document-outline" size={40} color={colors.textDisabled} />
+                  <MaterialCommunityIcons name="file-document-outline" size={40} color={colors.neutral[300]} />
                   <Text style={styles.emptyText}>{emptyMessage}</Text>
                 </View>
               )}
@@ -512,164 +512,164 @@ const Dropdown = forwardRef<View, DropdownProps>((props, ref) => {
 const styles = StyleSheet.create({
   container: {
     marginVertical: spacing.sm,
-  },
+  } as any,
   label: {
     fontSize: 14,
-    fontFamily: fonts.medium,
-    color: colors.text,
+    fontFamily: fonts.medium.fontFamily,
+    color: colors.neutral[900],
     marginBottom: spacing.xs,
-  },
+  } as any,
   required: {
-    color: colors.error,
-  },
+    color: colors.error[500],
+  } as any,
   trigger: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
     borderRadius: 8,
-    borderColor: colors.border,
-  },
+    borderColor: colors.neutral[200],
+  } as any,
   disabled: {
     opacity: 0.6,
-  },
+  } as any,
   triggerText: {
     flex: 1,
-    fontFamily: fonts.regular,
-  },
+    fontFamily: fonts.regular.fontFamily,
+  } as any,
   placeholder: {
-    color: colors.textDisabled,
-  },
+    color: colors.neutral[300],
+  } as any,
   triggerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
+  } as any,
   clearButton: {
     marginRight: spacing.sm,
-  },
+  } as any,
   errorText: {
     fontSize: 12,
-    fontFamily: fonts.regular,
-    color: colors.error,
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.error[500],
     marginTop: spacing.xs,
-  },
+  } as any,
   dropdownOverlay: {
     zIndex: 9999,
-  },
+  } as any,
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
-  },
+  } as any,
   dropdown: {
     position: 'absolute',
     left: 0,
     right: 0,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.neutral[0],
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.neutral[200],
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 5,
     overflow: 'hidden',
-  },
+  } as any,
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
+    borderBottomColor: colors.neutral[200],
+  } as any,
   searchInput: {
     flex: 1,
     marginLeft: spacing.sm,
     fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.text,
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.neutral[900],
     padding: 0,
-  },
+  } as any,
   scrollView: {
     maxHeight: 200,
-  },
+  } as any,
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     minHeight: 44,
-  },
+  } as any,
   selectedItem: {
-    backgroundColor: colors.primaryLight,
-  },
+    backgroundColor: colors.primary[100],
+  } as any,
   disabledItem: {
     opacity: 0.5,
-  },
+  } as any,
   checkboxContainer: {
     marginRight: spacing.sm,
-  },
+  } as any,
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: colors.border,
+    borderColor: colors.neutral[200],
     justifyContent: 'center',
     alignItems: 'center',
-  },
+  } as any,
   checkboxSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
+  } as any,
   checkboxDisabled: {
-    backgroundColor: colors.disabled,
-    borderColor: colors.borderDisabled,
-  },
+    backgroundColor: colors.neutral[100],
+    borderColor: colors.neutral[300],
+  } as any,
   itemIcon: {
     marginRight: spacing.sm,
-  },
+  } as any,
   itemText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.text,
-  },
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.neutral[900],
+  } as any,
   selectedItemText: {
-    color: colors.primary,
-    fontFamily: fonts.medium,
-  },
+    color: colors.primary[500],
+    fontFamily: fonts.medium.fontFamily,
+  } as any,
   disabledItemText: {
-    color: colors.textDisabled,
-  },
+    color: colors.neutral[300],
+  } as any,
   selectedIcon: {
     marginLeft: spacing.sm,
-  },
+  } as any,
   groupHeader: {
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.surfaceVariant,
-  },
+    backgroundColor: colors.neutral[100],
+  } as any,
   groupText: {
     fontSize: 12,
-    fontFamily: fonts.medium,
-    color: colors.textSecondary,
+    fontFamily: fonts.medium.fontFamily,
+    color: colors.neutral[500],
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-  },
+  } as any,
   emptyContainer: {
     padding: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-  },
+  } as any,
   emptyText: {
     fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.neutral[500],
     marginTop: spacing.sm,
     textAlign: 'center',
-  },
-});
+  } as any,
+}) as any;
 
 Dropdown.displayName = 'Dropdown';
 

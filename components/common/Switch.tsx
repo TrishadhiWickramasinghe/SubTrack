@@ -1,4 +1,5 @@
 import { colors, fonts, spacing } from '@/config/theme';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -107,19 +108,19 @@ const Switch: React.FC<SwitchProps> = ({
   const thumbRange = trackWidth - thumbSize;
 
   const getTrackColor = () => {
-    if (disabled) return colors.disabled;
+    if (disabled) return colors.neutral[100];
     if (trackColor) {
-      return isOn ? trackColor.true || color : trackColor.false || colors.border;
+      return isOn ? trackColor.true || color : trackColor.false || colors.neutral[200];
     }
-    return isOn ? color + '40' : colors.border;
+    return isOn ? color + '40' : colors.neutral[200];
   };
 
   const getThumbColor = () => {
-    if (disabled) return colors.surface;
+    if (disabled) return colors.neutral[0];
     if (thumbColor) {
-      return isOn ? thumbColor.true || color : thumbColor.false || colors.surface;
+      return isOn ? thumbColor.true || color : thumbColor.false || colors.neutral[0];
     }
-    return isOn ? color : colors.surface;
+    return isOn ? color : colors.neutral[0];
   };
 
   const getIconName = () => {
@@ -130,11 +131,11 @@ const Switch: React.FC<SwitchProps> = ({
   };
 
   const getIconColor = () => {
-    if (disabled) return colors.textDisabled;
+    if (disabled) return colors.neutral[300];
     if (iconColor) {
-      return isOn ? iconColor.true || colors.surface : iconColor.false || colors.text;
+      return isOn ? iconColor.true || colors.neutral[0] : iconColor.false || colors.neutral[900];
     }
-    return isOn ? colors.surface : colors.text;
+    return isOn ? colors.neutral[0] : colors.neutral[900];
   };
 
   const toggleSwitch = () => {
@@ -231,7 +232,7 @@ const Switch: React.FC<SwitchProps> = ({
     if (showIcon) {
       return (
         <MaterialCommunityIcons
-          name={getIconName()}
+          name={getIconName() as any}
           size={thumbSize * 0.6}
           color={getIconColor()}
         />
@@ -296,7 +297,7 @@ const Switch: React.FC<SwitchProps> = ({
               styles.label,
               {
                 fontSize: getLabelSize(),
-                color: disabled ? colors.textDisabled : colors.text,
+                color: disabled ? colors.neutral[300] : colors.neutral[900],
                 marginRight: spacing.md,
               },
               labelStyle,
@@ -309,7 +310,7 @@ const Switch: React.FC<SwitchProps> = ({
                 styles.description,
                 {
                   fontSize: getLabelSize() - 2,
-                  color: disabled ? colors.textDisabled : colors.textSecondary,
+                  color: disabled ? colors.neutral[300] : colors.neutral[500],
                 },
                 descriptionStyle,
               ]}>
@@ -330,7 +331,7 @@ const Switch: React.FC<SwitchProps> = ({
                     styles.label,
                     {
                       fontSize: getLabelSize(),
-                      color: disabled ? colors.textDisabled : colors.text,
+                      color: disabled ? colors.neutral[300] : colors.neutral[900],
                       marginLeft: spacing.md,
                     },
                     labelStyle,
@@ -343,7 +344,7 @@ const Switch: React.FC<SwitchProps> = ({
                       styles.description,
                       {
                         fontSize: getLabelSize() - 2,
-                        color: disabled ? colors.textDisabled : colors.textSecondary,
+                        color: disabled ? colors.neutral[300] : colors.neutral[500],
                       },
                       descriptionStyle,
                     ]}>
@@ -388,12 +389,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontFamily: fonts.medium,
+    fontFamily: fonts.medium.fontFamily,
   },
   description: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
     marginTop: 2,
   },
-});
+} as any);
 
 export default Switch;

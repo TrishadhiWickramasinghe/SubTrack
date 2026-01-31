@@ -1,4 +1,4 @@
-import { colors } from '@config/theme';
+import { colors } from '@/config/theme';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import {

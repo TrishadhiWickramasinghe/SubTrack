@@ -1,6 +1,6 @@
-import { StyleSheet, Platform } from 'react-native';
-import { colors, spacing, fonts } from '@config/theme';
-import { globalStyles, combineStyles } from './globalStyles';
+import { colors, fonts, spacing } from '@/config/theme';
+import { StyleSheet } from 'react-native';
+import { combineStyles, globalStyles } from './globalStyles';
 
 const buttonStyles = StyleSheet.create({
   // ===== BASE BUTTON STYLES =====
@@ -659,4 +659,4 @@ const buttonPresets = {
   }),
 };
 
-export { buttonStyles, buttonPresets, createButtonStyle };
+export { buttonPresets, buttonStyles, createButtonStyle };

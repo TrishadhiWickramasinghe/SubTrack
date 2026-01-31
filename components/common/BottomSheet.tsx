@@ -1,5 +1,6 @@
-import { colors, fonts, spacing } from '@config/theme';
-import { BlurView } from '@react-native-community/blur';
+import { colors, fonts, spacing } from '@/config/theme';
+// import { BlurView } from '@react-native-blur';
+import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -19,7 +20,6 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type BottomSheetType = 'modal' | 'picker' | 'action' | 'form' | 'custom';
 export type BottomSheetSnapPoint = number | string; // number in pixels or percentage string like '50%'
@@ -202,15 +202,15 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     return minHeight;
   };
 
-  const getCustomHeight = () => {
+  const getCustomHeight = (): number => {
     if (height) {
       if (typeof height === 'string' && height.includes('%')) {
         const percentage = parseFloat(height) / 100;
         return screenHeight * percentage;
       }
-      return height;
+      return height as number;
     }
-    return getCurrentSnapValue();
+    return getCurrentSnapValue() as number;
   };
 
   const showSheet = () => {
@@ -280,7 +280,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     if (index < 0 || index >= snapPoints.length) return;
 
     const snapValues = getSnapPointsInPixels();
-    const targetY = screenHeight - snapValues[index];
+    const targetY = screenHeight - (snapValues[index] as number);
     
     setCurrentSnap(index);
     onSnapChange?.(index);
@@ -406,7 +406,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
               onPress={handleCloseButtonPress}
               hitSlop={{ top: 10, bottom: 10, left: 10, right:10 }}
               testID="bottom-sheet-close-button">
-              <Icon name="close" size={24} color={colors.text} />
+              <Icon name="close" size={24} color={colors.neutral[900]} />
             </TouchableOpacity>
           )}
         </View>
@@ -436,7 +436,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
               style={[
                 styles.snapDot,
                 {
-                  backgroundColor: index === currentSnap ? colors.primary : colors.border,
+                  backgroundColor: index === currentSnap ? colors.primary[500] : colors.neutral[200],
                   width: index === currentSnap ? 24 : 8,
                 },
               ]}
@@ -465,6 +465,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
               opacity: backdropOpacityAnim,
             },
           ]}>
+          {/* BlurView commented out - install @react-native-blur if needed
           {backdropBlur && Platform.OS === 'ios' && (
             <BlurView
               style={StyleSheet.absoluteFill}
@@ -473,6 +474,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
               reducedTransparencyFallbackColor={backdropColor}
             />
           )}
+          */}
         </Animated.View>
       </TouchableOpacity>
 
@@ -527,21 +529,21 @@ const styles = StyleSheet.create({
     zIndex: -1,
   },
   sheetContainer: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.neutral[0],
     width: '100%',
     overflow: 'hidden',
-  },
+  } as any,
   dragHandleContainer: {
     alignItems: 'center',
     paddingTop: spacing.sm,
     paddingBottom: spacing.xs,
-  },
+  } as any,
   dragHandle: {
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: colors.border,
-  },
+    backgroundColor: colors.neutral[200],
+  } as any,
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -549,52 +551,53 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
+    borderBottomColor: colors.neutral[200],
+  } as any,
   titleContainer: {
     flex: 1,
     marginRight: spacing.md,
-  },
+  } as any,
   title: {
     fontSize: 18,
-    fontFamily: fonts.bold,
-    color: colors.text,
+    fontFamily: fonts.medium.fontFamily,
+    fontWeight: fonts.medium.fontWeight,
+    color: colors.neutral[900],
     marginBottom: spacing.xs,
-  },
+  } as any,
   subtitle: {
     fontSize: 14,
-    fontFamily: fonts.regular,
-    color: colors.textSecondary,
-  },
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.neutral[500],
+  } as any,
   closeButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.surfaceVariant,
-  },
+    backgroundColor: colors.neutral[100],
+  } as any,
   content: {
     flex: 1,
-  },
+  } as any,
   scrollContent: {
     padding: spacing.lg,
-  },
+  } as any,
   snapIndicator: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
+    borderTopColor: colors.neutral[200],
+  } as any,
   snapDot: {
     height: 8,
     borderRadius: 4,
     marginHorizontal: 4,
     transitionProperty: 'width',
     transitionDuration: '200ms',
-  },
+  } as any,
 });
 
 export default BottomSheet;

@@ -1,4 +1,4 @@
-import { colors, spacing } from '@config/theme';
+import { colors, spacing } from '@/config/theme';
 import { useTheme } from '@hooks/useTheme';
 import { HeaderBackButton } from '@react-navigation/elements';
 import { createStackNavigator } from '@react-navigation/stack';

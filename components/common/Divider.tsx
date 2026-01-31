@@ -1,4 +1,4 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -55,7 +55,7 @@ const Divider: React.FC<DividerProps> = ({
   variant = 'solid',
   orientation = 'horizontal',
   thickness = 1,
-  color = colors.border,
+  color = colors.neutral[200],
   gradientColors,
   text,
   textPosition = 'center',
@@ -236,7 +236,7 @@ const Divider: React.FC<DividerProps> = ({
             <Text
               style={[
                 styles.text,
-                { color: colors.textSecondary },
+                { color: colors.neutral[500] as any },
                 textStyle,
               ]}>
               {text}
@@ -330,11 +330,11 @@ const Divider: React.FC<DividerProps> = ({
   const animationStyle = getAnimationStyle();
 
   const accessibilityProps = decorative ? {
-    accessibilityRole: 'none',
+    accessibilityRole: 'none' as any,
     accessibilityElementsHidden: true,
-    importantForAccessibility: 'no-hide-descendants',
+    importantForAccessibility: 'no-hide-descendants' as any,
   } : {
-    accessibilityRole: 'separator',
+    accessibilityRole: 'separator' as any,
     accessibilityLabel: text || 'Divider',
   };
 
@@ -417,9 +417,9 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
     marginHorizontal: spacing.xs,
   },
-});
+}) as any;
 
 export default Divider;

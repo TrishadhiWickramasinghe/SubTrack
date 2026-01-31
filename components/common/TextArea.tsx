@@ -1,4 +1,4 @@
-import { colors } from '@config/theme';
+import { colors } from '@/config/theme';
 import React, { forwardRef, useRef, useState } from 'react';
 import {
     Animated,

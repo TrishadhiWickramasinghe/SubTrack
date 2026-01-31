@@ -1,4 +1,4 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
 import { Dimensions, Platform, StyleSheet } from 'react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -40,17 +40,17 @@ const globalStyles = StyleSheet.create({
   // ===== LAYOUT =====
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.neutral[50],
   },
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.neutral[50],
     paddingTop: currentPlatform.safeAreaTop,
     paddingBottom: currentPlatform.safeAreaBottom,
   },
   screenContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.neutral[50],
     paddingHorizontal: spacing.lg,
   },
   scrollContainer: {
@@ -243,13 +243,13 @@ const globalStyles = StyleSheet.create({
   // ===== TEXT STYLES =====
   textXs: {
     fontSize: 10,
-    fontFamily: fonts.regular,
-    color: colors.text,
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.neutral[900],
   },
   textSm: {
     fontSize: 12,
-    fontFamily: fonts.regular,
-    color: colors.text,
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.neutral[900],
   },
   textMd: {
     fontSize: 14,
@@ -781,3 +781,4 @@ const responsive = {
 };
 
 export { combineStyles, currentPlatform, globalStyles, responsive };
+

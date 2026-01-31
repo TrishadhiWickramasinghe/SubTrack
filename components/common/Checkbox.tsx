@@ -108,34 +108,34 @@ const Checkbox: React.FC<CheckboxProps> = ({
 
   const getBorderColor = () => {
     if (error) return colors.error;
-    if (disabled) return colors.borderDisabled;
+    if (disabled) return colors.neutral[300];
     if (borderColor) return borderColor;
     if (isChecked) return checkedColor || color;
-    return uncheckedColor || colors.border;
+    return uncheckedColor || colors.neutral[200];
   };
 
   const getBackgroundColor = () => {
-    if (disabled) return colors.disabled;
+    if (disabled) return colors.neutral[100];
     if (isChecked) return checkedColor || color;
-    return uncheckedColor || colors.surface;
+    return uncheckedColor || colors.neutral[0];
   };
 
   const getIconColor = () => {
     if (iconColor) return iconColor;
-    if (disabled) return colors.textDisabled;
-    return colors.surface;
+    if (disabled) return colors.neutral[300];
+    return colors.neutral[0];
   };
 
   const getLabelColor = () => {
-    if (disabled) return colors.textDisabled;
+    if (disabled) return colors.neutral[300];
     if (error) return colors.error;
-    return colors.text;
+    return colors.neutral[900];
   };
 
   const getDescriptionColor = () => {
-    if (disabled) return colors.textDisabled;
+    if (disabled) return colors.neutral[300];
     if (error) return colors.error;
-    return colors.textSecondary;
+    return colors.neutral[500];
   };
 
   const handlePress = () => {
@@ -271,7 +271,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
                 },
               ]}>
               <MaterialCommunityIcons
-                name={indeterminate ? 'minus' : icon}
+                name={indeterminate ? 'minus' : (icon as any)}
                 size={checkboxIconSize}
                 color={getIconColor()}
               />
@@ -367,23 +367,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
     lineHeight: 20,
   },
   required: {
-    color: colors.error,
+    color: colors.error[500],
   },
   description: {
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
     marginTop: 2,
     lineHeight: 18,
   },
   errorText: {
     fontSize: 12,
-    fontFamily: fonts.regular,
-    color: colors.error,
+    fontFamily: fonts.regular.fontFamily,
+    color: colors.error[500],
     marginTop: 2,
   },
-});
+}) as any;
 
 export default Checkbox;

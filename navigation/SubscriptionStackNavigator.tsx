@@ -1,10 +1,10 @@
-import { colors, spacing } from '@config/theme';
+import { colors, spacing } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useTheme } from '@hooks/useTheme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Import subscription screens
 import AddSubscriptionScreen from '@screens/subscription/AddSubscriptionScreen';

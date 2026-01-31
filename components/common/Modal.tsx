@@ -1,5 +1,6 @@
-import { colors, fonts, spacing } from '@config/theme';
-import { BlurView } from '@react-native-community/blur';
+import { colors, fonts, spacing } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -20,7 +21,6 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type ModalSize = 'small' | 'medium' | 'large' | 'fullscreen';
 export type ModalAnimation = 'slide' | 'fade' | 'scale' | 'none';

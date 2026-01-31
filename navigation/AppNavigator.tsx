@@ -1,4 +1,4 @@
-import { colors } from '@config/theme';
+import { colors } from '@/config/theme';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';

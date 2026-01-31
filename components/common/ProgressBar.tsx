@@ -1,4 +1,4 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -77,7 +77,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   height,
   width,
   thickness,
-  trackColor = colors.surfaceVariant,
+  trackColor = colors.neutral[100],
   progressColor,
   gradientColors,
   showTrack = true,
@@ -100,7 +100,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   maximumValue = 100,
   bufferProgress,
   showBuffer = false,
-  bufferColor = colors.border,
+  bufferColor = colors.neutral[200],
 }) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [indeterminateProgress, setIndeterminateProgress] = useState(0);
@@ -456,7 +456,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           styles.label,
           {
             fontSize: sizeConfig.fontSize,
-            color: colors.text,
+            color: colors.neutral[900] as any,
             textAlign: labelPosition === 'center' ? 'center' : 'auto',
           },
           labelStyle,
@@ -478,7 +478,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             style={[
               styles.stepLabel,
               {
-                color: index <= (currentStep || 0) ? colorConfig : colors.textSecondary,
+                color: (index <= (currentStep || 0) ? colorConfig : colors.neutral[500]) as any,
                 fontWeight: index === (currentStep || 0) ? 'bold' : 'normal',
               },
             ]}>
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontFamily: fonts.medium,
+    fontFamily: fonts.medium.fontFamily,
   },
   stepLabelsContainer: {
     flexDirection: 'row',
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   },
   stepLabel: {
     fontSize: 12,
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
     textAlign: 'center',
     flex: 1,
   },
@@ -640,6 +640,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-});
+}) as any;
 
 export default ProgressBar;

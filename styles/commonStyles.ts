@@ -1,4 +1,4 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
 import { StyleSheet } from 'react-native';
 import { combineStyles, globalStyles } from './globalStyles';
 
@@ -822,3 +822,4 @@ const commonHelpers = {
 };
 
 export { combineStyles, commonHelpers, commonStyles };
+

@@ -1,4 +1,5 @@
-import { colors, fonts } from '@config/theme';
+import { colors, fonts } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -13,7 +14,6 @@ import {
     View,
     ViewStyle
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | number;
 export type AvatarVariant = 'circle' | 'rounded' | 'square';
@@ -85,12 +85,12 @@ const Avatar: React.FC<AvatarProps> = ({
   uri,
   text,
   icon,
-  iconColor = colors.surface,
+  iconColor = colors.neutral[0],
   iconSize,
   size = 'md',
   variant = 'circle',
   backgroundColor = colors.primary,
-  textColor = colors.surface,
+  textColor = colors.neutral[0],
   borderColor,
   borderWidth = 0,
   elevation = 0,
@@ -129,7 +129,7 @@ const Avatar: React.FC<AvatarProps> = ({
   showEditButton = false,
   editButtonIcon = 'pencil',
   editButtonSize = 16,
-  editButtonColor = colors.surface,
+  editButtonColor = colors.neutral[0],
   onEditPress,
   editButtonStyle,
   editButtonPosition = 'bottom-right',
@@ -206,10 +206,10 @@ const Avatar: React.FC<AvatarProps> = ({
   const getStatusColor = () => {
     switch (status) {
       case 'online': return colors.success;
-      case 'offline': return colors.textDisabled;
+      case 'offline': return colors.neutral[300];
       case 'away': return colors.warning;
       case 'busy': return colors.error;
-      case 'invisible': return colors.textSecondary;
+      case 'invisible': return colors.neutral[500];
       default: return colors.success;
     }
   };
@@ -229,7 +229,7 @@ const Avatar: React.FC<AvatarProps> = ({
       height: statusSize,
       borderRadius: statusSize / 2,
       borderWidth: 2,
-      borderColor: colors.surface,
+      borderColor: colors.neutral[0],
     };
   };
 
@@ -393,7 +393,7 @@ const Avatar: React.FC<AvatarProps> = ({
     if (icon) {
       return (
         <Icon
-          name={icon}
+          name={icon as any}
           size={iconSizeCalculated}
           color={iconColor}
         />
@@ -408,7 +408,7 @@ const Avatar: React.FC<AvatarProps> = ({
             {
               color: textColor,
               fontSize: avatarSize * 0.4,
-              fontFamily: fonts.bold,
+              fontFamily: fonts.medium.fontFamily,
             },
             textStyle,
           ]}>
@@ -439,8 +439,8 @@ const Avatar: React.FC<AvatarProps> = ({
           styles.status,
           statusPosition,
           {
-            backgroundColor: statusColor,
-            borderColor: colors.surface,
+            backgroundColor: (getStatusColor() as any) as string,
+            borderColor: colors.neutral[0],
           },
           statusStyle,
         ]}
@@ -476,14 +476,14 @@ const Avatar: React.FC<AvatarProps> = ({
             width: editButtonSize * 1.5,
             height: editButtonSize * 1.5,
             borderRadius: (editButtonSize * 1.5) / 2,
-            backgroundColor: colors.primary,
+            backgroundColor: colors.primary[500] as any,
           },
           editButtonStyle,
         ]}
         onPress={onEditPress}
         hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
         <Icon
-          name={editButtonIcon}
+          name={editButtonIcon as any}
           size={editButtonSize}
           color={editButtonColor}
         />
@@ -505,9 +505,9 @@ const Avatar: React.FC<AvatarProps> = ({
         {
           width: avatarSize,
           height: avatarSize,
-          backgroundColor,
+          backgroundColor: (backgroundColor || colors.primary[500]) as any,
           borderWidth,
-          borderColor: borderColor || colors.border,
+          borderColor: borderColor || colors.neutral[200],
           transform: [{ scale: scaleAnim }],
           opacity: fadeAnim,
         },
@@ -622,7 +622,7 @@ const AvatarGroup: React.FC<AvatarGroupProps> = ({
               borderRadius: variant === 'circle' ? avatarSize / 2 : 
                           variant === 'rounded' ? avatarSize * 0.2 : 0,
               marginLeft: (displayAvatars.length - 1) * spacing * overlap,
-              backgroundColor: colors.primary,
+              backgroundColor: colors.primary[500] as any,
               zIndex: 0,
             },
             remainingAvatarStyle,
@@ -631,7 +631,7 @@ const AvatarGroup: React.FC<AvatarGroupProps> = ({
             style={[
               styles.remainingText,
               {
-                color: colors.surface,
+                color: colors.neutral[0],
                 fontSize: avatarSize * 0.3,
               },
               remainingTextStyle,
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   remainingText: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.medium.fontFamily,
     textAlign: 'center',
   },
 });

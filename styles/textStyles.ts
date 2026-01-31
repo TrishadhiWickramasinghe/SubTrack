@@ -1,4 +1,4 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
 import { StyleSheet } from 'react-native';
 import { combineStyles } from './globalStyles';
 
@@ -1124,3 +1124,4 @@ const textPresets = {
 };
 
 export { createTextStyle, textPresets, textStyles };
+

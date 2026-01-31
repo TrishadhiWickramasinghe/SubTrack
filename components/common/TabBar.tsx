@@ -1,5 +1,7 @@
-import { colors, fonts, spacing } from '@config/theme';
-import { BlurView } from '@react-native-community/blur';
+import { colors, fonts, spacing } from '@/config/theme';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+// BlurView import commented - use conditional rendering or alternative blur effect
+// import { BlurView } from 'expo-blur';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -14,7 +16,6 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type TabBarVariant = 'default' | 'scrollable' | 'segmented' | 'floating' | 'bottom' | 'icon-only';
 export type TabBarPosition = 'top' | 'bottom';
@@ -116,16 +117,16 @@ const TabBar: React.FC<TabBarProps> = ({
   tabBorderRadius = 8,
   tabBackgroundColor = 'transparent',
   tabSelectedBackgroundColor = colors.primary,
-  tabTextColor = colors.textSecondary,
+  tabTextColor = colors.neutral[500],
   tabSelectedTextColor = colors.primary,
-  tabIconColor = colors.textSecondary,
+  tabIconColor = colors.neutral[500],
   tabSelectedIconColor = colors.primary,
   tabIconSize,
   showBadge = true,
   badgeSize = 18,
   badgePosition = 'top-right',
   showDivider = true,
-  dividerColor = colors.border,
+  dividerColor = colors.neutral[200],
   dividerHeight = 1,
   blurBackground = false,
   blurAmount = 10,
@@ -148,7 +149,7 @@ const TabBar: React.FC<TabBarProps> = ({
   accessibilityLabel = 'Tab bar',
   showScrollButtons = false,
   scrollButtonSize = 40,
-  scrollButtonColor = colors.text,
+  scrollButtonColor = colors.neutral[900],
   onScrollButtonPress,
   initialScrollOffset = 0,
   centered = false,
@@ -219,7 +220,7 @@ const TabBar: React.FC<TabBarProps> = ({
         indicatorWidthValue = tabWidth * percentage;
         indicatorLeft = tabPosition + (tabWidth - indicatorWidthValue) / 2;
       } else {
-        indicatorWidthValue = indicatorWidth;
+        indicatorWidthValue = (indicatorWidth as number) || width;
         indicatorLeft = tabPosition + (tabWidth - indicatorWidthValue) / 2;
       }
     }
@@ -371,7 +372,7 @@ const TabBar: React.FC<TabBarProps> = ({
       <>
         {iconName && (
           <Icon
-            name={iconName}
+            name={iconName as any}
             size={iconSize}
             color={iconColor}
             style={isIconOnly ? null : styles.iconWithText}
@@ -385,7 +386,7 @@ const TabBar: React.FC<TabBarProps> = ({
               {
                 fontSize: sizeConfig.fontSize,
                 color: textColor,
-                fontFamily: isActive ? fonts.semiBold : fonts.medium,
+                fontFamily: isActive ? fonts.medium.fontFamily : fonts.medium.fontFamily,
                 marginLeft: iconName && !isIconOnly ? spacing.xs : 0,
               },
               tabTextStyle,
@@ -411,7 +412,7 @@ const TabBar: React.FC<TabBarProps> = ({
         paddingVertical: sizeConfig.paddingVertical,
         paddingHorizontal: isSegmented ? 0 : sizeConfig.paddingHorizontal,
         borderRadius: tabBorderRadius,
-        backgroundColor: isActive && isSegmented ? tabSelectedBackgroundColor : tabBackgroundColor,
+        backgroundColor: (isActive && isSegmented ? tabSelectedBackgroundColor : tabBackgroundColor) as any,
         marginRight: isSegmented ? 0 : tabSpacing,
         flex: isSegmented || fullWidth ? tabFlex : undefined,
         opacity: isDisabled ? 0.5 : 1,
@@ -552,7 +553,7 @@ const TabBar: React.FC<TabBarProps> = ({
       left: isFloating ? spacing.lg : undefined,
       right: isFloating ? spacing.lg : undefined,
       borderRadius: isFloating ? tabBorderRadius : 0,
-      backgroundColor: blurBackground ? 'transparent' : colors.surface,
+      backgroundColor: blurBackground ? 'transparent' : colors.neutral[0],
     },
     containerStyle,
   ];
@@ -618,14 +619,15 @@ const TabBar: React.FC<TabBarProps> = ({
 
   return (
     <View style={[styles.wrapper, style]} testID={testID} accessibilityLabel={accessibilityLabel}>
-      {blurBackground && (
+      {/* BlurView disabled - implement alternative blur effect if needed */}
+      {/* blurBackground && (
         <BlurView
           style={StyleSheet.absoluteFill}
           blurType="light"
           blurAmount={blurAmount}
-          reducedTransparencyFallbackColor={colors.surface}
+          reducedTransparencyFallbackColor={colors.neutral[0]}
         />
-      )}
+      ) */}
       
       <Animated.View style={containerStyles}>
         {position === 'top' && divider}
@@ -649,7 +651,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   segmentedContainer: {
-    backgroundColor: colors.surfaceVariant,
+    backgroundColor: colors.neutral[100],
     borderRadius: 8,
     padding: 2,
   },
@@ -708,7 +710,7 @@ const styles = StyleSheet.create({
     left: -6,
   },
   badgeText: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.medium.fontFamily,
     textAlign: 'center',
   },
   divider: {
@@ -731,7 +733,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.neutral[0],
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

@@ -1,4 +1,5 @@
 import { colors, fonts, spacing } from '@/config/theme';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import {
     Animated,
@@ -128,35 +129,35 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>((props, ref) => {
   const cancelAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | number | null>(null);
 
   const { width: screenWidth } = Dimensions.get('window');
 
   const getThemeColors = () => {
     const themes = {
       light: {
-        bg: colors.surface,
-        text: colors.text,
-        icon: colors.textSecondary,
-        border: colors.border,
-        placeholder: colors.textDisabled,
-        suggestionBg: colors.surface,
+        bg: colors.neutral[0],
+        text: colors.neutral[900],
+        icon: colors.neutral[500],
+        border: colors.neutral[200],
+        placeholder: colors.neutral[300],
+        suggestionBg: colors.neutral[0],
       },
       dark: {
-        bg: colors.surfaceVariant,
-        text: colors.text,
-        icon: colors.textSecondary,
-        border: colors.border,
-        placeholder: colors.textDisabled,
-        suggestionBg: colors.surfaceVariant,
+        bg: colors.neutral[100],
+        text: colors.neutral[900],
+        icon: colors.neutral[500],
+        border: colors.neutral[200],
+        placeholder: colors.neutral[300],
+        suggestionBg: colors.neutral[100],
       },
       auto: {
-        bg: colors.surface,
-        text: colors.text,
-        icon: colors.textSecondary,
-        border: colors.border,
-        placeholder: colors.textDisabled,
-        suggestionBg: colors.surface,
+        bg: colors.neutral[0],
+        text: colors.neutral[900],
+        icon: colors.neutral[500],
+        border: colors.neutral[200],
+        placeholder: colors.neutral[300],
+        suggestionBg: colors.neutral[0],
       },
     };
 
@@ -294,7 +295,7 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>((props, ref) => {
       activeOpacity={0.7}>
       {item.icon && (
         <MaterialCommunityIcons
-          name={item.icon}
+          name={item.icon as any}
           size={20}
           color={colorsConfig.icon}
           style={styles.suggestionIcon}
@@ -409,7 +410,7 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>((props, ref) => {
               borderRadius,
               backgroundColor: backgroundColor || colorsConfig.bg,
               borderWidth: variant === 'minimal' ? 0 : 1,
-              borderColor: borderColor || (isFocused ? colors.primary : colorsConfig.border),
+              borderColor: borderColor || (isFocused ? colors.primary[500] : colorsConfig.border),
             },
             style,
           ]}>
@@ -417,7 +418,7 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>((props, ref) => {
             <MaterialCommunityIcons
               name={loading ? 'loading' : 'magnify'}
               size={fontSize + 4}
-              color={iconColor || (disabled ? colors.textDisabled : colorsConfig.icon)}
+              color={iconColor || (disabled ? colors.neutral[300] : colorsConfig.icon)}
               style={styles.searchIcon}
             />
           )}
@@ -477,7 +478,7 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>((props, ref) => {
               onPress={onFilterPress}
               activeOpacity={0.7}>
               <MaterialCommunityIcons
-                name="filter-variant"
+                name="filter-variant" as any
                 size={20}
                 color={iconColor || colorsConfig.icon}
               />
@@ -500,7 +501,7 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>((props, ref) => {
             cancelButtonStyle,
           ]}>
           <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
-            <Text style={[styles.cancelText, { color: colors.primary }]}>
+            <Text style={[styles.cancelText, { color: colors.primary[500] }]}>
               Cancel
             </Text>
           </TouchableOpacity>
@@ -515,65 +516,65 @@ const SearchBar = forwardRef<TextInput, SearchBarProps>((props, ref) => {
 const styles = StyleSheet.create({
   container: {
     marginVertical: spacing.sm,
-  },
+  } as any,
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
+  } as any,
   searchWrapper: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-  },
+  } as any,
   searchIcon: {
     marginRight: spacing.sm,
-  },
+  } as any,
   input: {
     flex: 1,
-    fontFamily: fonts.regular,
+    fontFamily: fonts.regular.fontFamily,
     paddingVertical: 0,
     paddingHorizontal: spacing.sm,
     margin: 0,
     includeFontPadding: false,
-  },
+  } as any,
   clearButton: {
     marginLeft: spacing.sm,
-  },
+  } as any,
   filterButton: {
     marginLeft: spacing.sm,
     position: 'relative',
-  },
+  } as any,
   filterBadge: {
     position: 'absolute',
     top: -6,
     right: -6,
-    backgroundColor: colors.error,
+    backgroundColor: colors.error[500],
     borderRadius: 8,
     minWidth: 16,
     height: 16,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
-  },
+  } as any,
   filterBadgeText: {
-    color: colors.surface,
+    color: colors.neutral[0],
     fontSize: 10,
-    fontFamily: fonts.semiBold,
-  },
+    fontFamily: fonts.medium.fontWeight,
+  } as any,
   cancelButtonContainer: {
     overflow: 'hidden',
-  },
+  } as any,
   cancelButton: {
     paddingLeft: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
     height: '100%',
-  },
+  } as any,
   cancelText: {
     fontSize: 16,
-    fontFamily: fonts.medium,
-  },
+    fontFamily: fonts.medium.fontFamily,
+  } as any,
   suggestionsContainer: {
     position: 'absolute',
     top: '100%',
@@ -583,7 +584,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     maxHeight: 300,
     zIndex: 1000,
-  },
+  } as any,
   suggestionsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -591,36 +592,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
+    borderBottomColor: colors.neutral[200],
+  } as any,
   suggestionsTitle: {
     fontSize: 12,
-    fontFamily: fonts.medium,
+    fontFamily: fonts.medium.fontFamily,
     opacity: 0.7,
-  },
+  } as any,
   clearRecent: {
     fontSize: 12,
-    fontFamily: fonts.medium,
-  },
+    fontFamily: fonts.medium.fontFamily,
+  } as any,
   suggestionsList: {
     maxHeight: 250,
-  },
+  } as any,
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
+    borderBottomColor: colors.neutral[200],
+  } as any,
   suggestionIcon: {
     marginRight: spacing.sm,
-  },
+  } as any,
   suggestionText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: fonts.regular,
-  },
+    fontFamily: fonts.regular.fontFamily,
+  } as any,
 });
 
 SearchBar.displayName = 'SearchBar';
