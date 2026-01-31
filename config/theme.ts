@@ -392,6 +392,10 @@ export const zIndex = {
   tooltip: 1070,
 };
 
+// Re-export colors and fonts for convenience
+export { colors } from './colors';
+export { fonts } from './fonts';
+
 export default {
   light: lightTheme,
   dark: darkTheme,
