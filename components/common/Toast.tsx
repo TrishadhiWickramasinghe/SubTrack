@@ -1,18 +1,18 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { BlurView } from '@react-native-community/blur';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    Easing,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Animated,
+  Dimensions,
+  Easing,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type ToastType = 'info' | 'success' | 'warning' | 'error' | 'loading';
 
@@ -391,7 +391,7 @@ const Toast: React.FC<ToastProps> = ({
           <View style={styles.iconContainer}>
             {type === 'loading' ? (
               <Animated.View style={styles.spinner}>
-                <Icon
+                <MaterialCommunityIcons
                   name="loading"
                   size={20}
                   color={config.color}
@@ -399,7 +399,7 @@ const Toast: React.FC<ToastProps> = ({
                 />
               </Animated.View>
             ) : (
-              <Icon name={config.icon} size={20} color={config.color} />
+              <MaterialCommunityIcons name={config.icon} size={20} color={config.color} />
             )}
           </View>
 
@@ -430,7 +430,7 @@ const Toast: React.FC<ToastProps> = ({
               style={styles.closeButton}
               onPress={handleClose}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name="close" size={16} color={config.textColor} />
+              <MaterialCommunityIcons name="close" size={16} color={config.textColor} />
             </TouchableOpacity>
           )}
         </TouchableOpacity>

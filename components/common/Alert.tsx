@@ -1,4 +1,4 @@
-import { colors, fonts, spacing } from '@config/theme';
+import { colors, fonts, spacing } from '@/config/theme';
 import { BlurView } from '@react-native-community/blur';
 import React, { useEffect, useRef, useState } from 'react';
 import {

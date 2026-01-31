@@ -1,4 +1,4 @@
-import { colors, fonts } from '@config/theme';
+import { colors, fonts } from '@/config/theme';
 import React from 'react';
 import {
     Animated,
@@ -10,7 +10,6 @@ import {
     View,
     ViewStyle,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export type BadgeVariant = 'filled' | 'outlined' | 'dot' | 'text';
 export type BadgeColor = 
@@ -294,7 +293,7 @@ const Badge: React.FC<BadgeProps> = ({
       return (
         <>
           {icon && iconPosition === 'left' && (
-            <Icon
+            <MaterialCommunityIcons
               name={icon}
               size={iconSize || sizeConfig.iconSize}
               color={iconColor || getTextColor()}
@@ -314,7 +313,7 @@ const Badge: React.FC<BadgeProps> = ({
             {text}
           </Text>
           {icon && iconPosition === 'right' && (
-            <Icon
+            <MaterialCommunityIcons
               name={icon}
               size={iconSize || sizeConfig.iconSize}
               color={iconColor || getTextColor()}
@@ -448,7 +447,7 @@ const Badge: React.FC<BadgeProps> = ({
           style={styles.closeButton}
           onPress={onClose}
           hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-          <Icon
+          <MaterialCommunityIcons
             name={closeIcon}
             size={sizeConfig.iconSize}
             color={closeIconColor || getTextColor()}
