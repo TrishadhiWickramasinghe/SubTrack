@@ -58,6 +58,82 @@ export const Category = {
  * Subscription class representing a tracked subscription service
  */
 export default class Subscription {
+  // Core identification
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  
+  // Basic information
+  name: string;
+  description: string;
+  category: string;
+  icon: string;
+  color: string;
+  serviceUrl: string;
+  
+  // Financial details
+  amount: number;
+  currency: string;
+  tax: number;
+  fees: number;
+  totalAmount: number;
+  
+  // Billing details
+  billingCycle: string;
+  customDays: number;
+  billingDate: string;
+  nextBillingDate: string | null;
+  lastPaymentDate: string | null;
+  firstBillingDate: string;
+  
+  // Payment details
+  paymentMethod: string;
+  paymentAccount: string;
+  autoRenew: boolean;
+  receipts: any[];
+  
+  // Status and tracking
+  status: string;
+  isShared: boolean;
+  sharedWith: any[];
+  notes: string;
+  tags: any[];
+  
+  // Trial information
+  hasTrial: boolean;
+  trialStartDate: string | null;
+  trialEndDate: string | null;
+  trialConverted: boolean;
+  
+  // Usage tracking
+  usageCount: number;
+  lastUsed: string | null;
+  rating: number;
+  valueScore: number;
+  
+  // Reminders and notifications
+  notificationEnabled: boolean;
+  notificationDays: number[];
+  notificationTime: string;
+  
+  // Historical data
+  paymentHistory: any[];
+  priceHistory: any[];
+  cancellationDate: string | null;
+  cancellationReason: string;
+  
+  // Budget and analysis
+  budgetCategory: string;
+  isEssential: boolean;
+  canNegotiate: boolean;
+  negotiationNotes: string;
+  
+  // Metadata
+  version: number;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  syncStatus: string;
+
   constructor(data = {}) {
     // Core identification
     this.id = data.id || uuidv4();
