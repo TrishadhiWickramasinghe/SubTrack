@@ -59,10 +59,10 @@ export const ValidationMessages = {
   NUMBER: 'Please enter a valid number',
   POSITIVE_NUMBER: 'Please enter a positive number',
   CURRENCY: 'Please enter a valid amount',
-  MIN_LENGTH: (min) => `Must be at least ${min} characters`,
-  MAX_LENGTH: (max) => `Must be at most ${max} characters`,
-  MIN_VALUE: (min) => `Must be at least ${min}`,
-  MAX_VALUE: (max) => `Must be at most ${max}`,
+  MIN_LENGTH: (min: number) => `Must be at least ${min} characters`,
+  MAX_LENGTH: (max: number) => `Must be at most ${max} characters`,
+  MIN_VALUE: (min: number) => `Must be at least ${min}`,
+  MAX_VALUE: (max: number) => `Must be at most ${max}`,
   PATTERN: 'Invalid format',
   MATCH: 'Values do not match',
   UNIQUE: 'This value already exists',
@@ -76,7 +76,11 @@ export const ValidationMessages = {
  * Validator class for comprehensive validation
  */
 export class Validator {
-  constructor(rules = {}) {
+  rules: Record<string, any[]>;
+  errors: Record<string, string[]>;
+  isValid: boolean;
+
+  constructor(rules: Record<string, any[]> = {}) {
     this.rules = rules;
     this.errors = {};
     this.isValid = true;
@@ -85,7 +89,7 @@ export class Validator {
   /**
    * Validate a single field
    */
-  validateField(name, value, context = {}) {
+  validateField(name: string, value: any, context: Record<string, any> = {}) {
     const fieldRules = this.rules[name];
     
     if (!fieldRules) {
@@ -111,7 +115,7 @@ export class Validator {
   /**
    * Validate all fields
    */
-  validateAll(data, context = {}) {
+  validateAll(data: Record<string, any>, context: Record<string, any> = {}) {
     this.errors = {};
     this.isValid = true;
     
@@ -134,7 +138,7 @@ export class Validator {
   /**
    * Check a single rule
    */
-  checkRule(rule, value, context = {}) {
+  checkRule(rule: any, value: any, context: Record<string, any> = {}): string | null {
     if (rule.condition && !rule.condition(value, context)) {
       return null; // Skip validation if condition not met
     }
@@ -186,15 +190,15 @@ export class Validator {
     
     // Check match with another field
     if (rule.match) {
-      const matchValue = context[rule.match];
+      const matchValue: any = context[rule.match];
       if (value !== matchValue) {
         return rule.message || ValidationMessages.MATCH;
       }
     }
     
     // Check unique
-    if (rule.unique && context.uniqueCheck) {
-      const isUnique = context.uniqueCheck(value, rule.field);
+    if (rule.unique && (context as any).uniqueCheck) {
+      const isUnique = (context as any).uniqueCheck(value, rule.field);
       if (!isUnique) {
         return rule.message || ValidationMessages.UNIQUE;
       }
@@ -206,14 +210,14 @@ export class Validator {
   /**
    * Get field errors
    */
-  getFieldErrors(fieldName) {
+  getFieldErrors(fieldName: string): string[] {
     return this.errors[fieldName] || [];
   }
 
   /**
    * Check if field has errors
    */
-  hasErrors(fieldName) {
+  hasErrors(fieldName: string): boolean {
     return this.errors[fieldName] && this.errors[fieldName].length > 0;
   }
 
@@ -228,7 +232,7 @@ export class Validator {
   /**
    * Add error manually
    */
-  addError(fieldName, error) {
+  addError(fieldName: string, error: string): void {
     if (!this.errors[fieldName]) {
       this.errors[fieldName] = [];
     }
@@ -259,7 +263,7 @@ export const FormValidationRules = {
     
     billingDate: [
       { required: true, message: 'Billing date is required' },
-      { validate: (value) => Validators.isValidDate(value), message: 'Invalid date format' },
+      { validate: (value: any) => Validators.isValidDate(value), message: 'Invalid date format' },
     ],
     
     category: [
@@ -357,7 +361,7 @@ export const Validators = {
   /**
    * Check if value is required
    */
-  required(value) {
+  required(value: any): string | boolean {
     if (value === null || value === undefined || value === '') {
       return ValidationMessages.REQUIRED;
     }
@@ -367,7 +371,7 @@ export const Validators = {
   /**
    * Check email validity
    */
-  email(value) {
+  email(value: any): string | boolean {
     if (!value) return true; // Skip if empty (use required separately)
     
     if (!ValidationPatterns.EMAIL.test(value)) {
@@ -379,7 +383,7 @@ export const Validators = {
   /**
    * Check URL validity
    */
-  url(value) {
+  url(value: any): string | boolean {
     if (!value) return true;
     
     if (!ValidationPatterns.URL.test(value)) {
@@ -391,7 +395,7 @@ export const Validators = {
   /**
    * Check phone number validity
    */
-  phone(value) {
+  phone(value: any): string | boolean {
     if (!value) return true;
     
     if (!ValidationPatterns.PHONE.test(value)) {
@@ -403,7 +407,7 @@ export const Validators = {
   /**
    * Check password strength
    */
-  password(value) {
+  password(value: any): string | boolean {
     if (!value) return true;
     
     if (!ValidationPatterns.PASSWORD.test(value)) {
@@ -415,7 +419,7 @@ export const Validators = {
   /**
    * Check min length
    */
-  minLength(value, min) {
+  minLength(value: any, min: number): string | boolean {
     if (!value) return true;
     
     if (String(value).length < min) {
@@ -427,7 +431,7 @@ export const Validators = {
   /**
    * Check max length
    */
-  maxLength(value, max) {
+  maxLength(value: any, max: number): string | boolean {
     if (!value) return true;
     
     if (String(value).length > max) {
@@ -439,7 +443,7 @@ export const Validators = {
   /**
    * Check min value
    */
-  minValue(value, min) {
+  minValue(value: any, min: number): string | boolean {
     if (value === null || value === undefined || value === '') return true;
     
     const numValue = Number(value);
@@ -452,7 +456,7 @@ export const Validators = {
   /**
    * Check max value
    */
-  maxValue(value, max) {
+  maxValue(value: any, max: number): string | boolean {
     if (value === null || value === undefined || value === '') return true;
     
     const numValue = Number(value);
@@ -465,7 +469,7 @@ export const Validators = {
   /**
    * Check pattern match
    */
-  pattern(value, pattern) {
+  pattern(value: any, pattern: RegExp): string | boolean {
     if (!value) return true;
     
     if (!pattern.test(String(value))) {
@@ -477,7 +481,7 @@ export const Validators = {
   /**
    * Check if value matches another field
    */
-  match(value, otherValue, fieldName = 'field') {
+  match(value: any, otherValue: any, fieldName: string = 'field'): string | boolean {
     if (value !== otherValue) {
       return `${fieldName} does not match`;
     }
@@ -487,7 +491,7 @@ export const Validators = {
   /**
    * Check date validity
    */
-  isValidDate(value) {
+  isValidDate(value: any): boolean {
     if (!value) return true;
     
     const date = new Date(value);
@@ -497,7 +501,7 @@ export const Validators = {
   /**
    * Check if date is in future
    */
-  isFutureDate(value) {
+  isFutureDate(value: any): string | boolean {
     if (!value) return true;
     
     const date = new Date(value);
@@ -513,7 +517,7 @@ export const Validators = {
   /**
    * Check if date is in past
    */
-  isPastDate(value) {
+  isPastDate(value: any): string | boolean {
     if (!value) return true;
     
     const date = new Date(value);
@@ -529,7 +533,7 @@ export const Validators = {
   /**
    * Check currency amount
    */
-  isCurrency(value) {
+  isCurrency(value: any): string | boolean {
     if (!value) return true;
     
     if (!ValidationPatterns.CURRENCY.test(String(value))) {
@@ -547,7 +551,7 @@ export const Validators = {
   /**
    * Check positive number
    */
-  isPositiveNumber(value) {
+  isPositiveNumber(value: any): string | boolean {
     if (!value) return true;
     
     const numValue = Number(value);
@@ -560,10 +564,10 @@ export const Validators = {
   /**
    * Check if value is unique in array
    */
-  isUnique(value, array, field = 'id', currentId = null) {
+  isUnique(value: any, array: any[], field: string = 'id', currentId: any = null): string | boolean {
     if (!value || !array) return true;
     
-    const existing = array.find(item => 
+    const existing = array.find((item: any) => 
       item[field] === value && (!currentId || item.id !== currentId)
     );
     
@@ -576,10 +580,10 @@ export const Validators = {
   /**
    * Validate subscription data
    */
-  validateSubscription(data, existingSubscriptions = []) {
+  validateSubscription(data: Record<string, any>, existingSubscriptions: any[] = []) {
     const validator = new Validator(FormValidationRules.SUBSCRIPTION);
     const context = {
-      uniqueCheck: (value) => Validators.isUnique(
+      uniqueCheck: (value: any) => Validators.isUnique(
         value, 
         existingSubscriptions, 
         'name', 
@@ -593,7 +597,7 @@ export const Validators = {
   /**
    * Validate user profile
    */
-  validateProfile(data) {
+  validateProfile(data: Record<string, any>) {
     const validator = new Validator(FormValidationRules.PROFILE);
     return validator.validateAll(data);
   },
@@ -601,7 +605,7 @@ export const Validators = {
   /**
    * Validate budget
    */
-  validateBudget(data) {
+  validateBudget(data: Record<string, any>) {
     const validator = new Validator(FormValidationRules.BUDGET);
     return validator.validateAll(data);
   },
@@ -609,7 +613,7 @@ export const Validators = {
   /**
    * Validate login credentials
    */
-  validateLogin(data) {
+  validateLogin(data: Record<string, any>) {
     const validator = new Validator(FormValidationRules.LOGIN);
     return validator.validateAll(data);
   },
@@ -617,7 +621,7 @@ export const Validators = {
   /**
    * Validate registration data
    */
-  validateRegistration(data) {
+  validateRegistration(data: Record<string, any>) {
     const validator = new Validator(FormValidationRules.REGISTRATION);
     return validator.validateAll(data);
   },
@@ -625,7 +629,7 @@ export const Validators = {
   /**
    * Sanitize input (basic XSS protection)
    */
-  sanitizeInput(input) {
+  sanitizeInput(input: any): any {
     if (typeof input !== 'string') return input;
     
     return input
@@ -640,7 +644,7 @@ export const Validators = {
   /**
    * Normalize input (trim whitespace, etc.)
    */
-  normalizeInput(input) {
+  normalizeInput(input: any): any {
     if (typeof input === 'string') {
       return input.trim();
     }
@@ -650,7 +654,7 @@ export const Validators = {
   /**
    * Format validation errors for display
    */
-  formatErrors(errors) {
+  formatErrors(errors: Record<string, string[]>): Array<{field: string, messages: string[]}> {
     if (!errors || typeof errors !== 'object') {
       return [];
     }

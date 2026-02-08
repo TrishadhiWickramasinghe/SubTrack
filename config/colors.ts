@@ -237,8 +237,6 @@ export const colors = {
   danger: error,
   caution: warning,
   positive: success,
-  neutral: neutral,
-  accent: accent,
   
   // Gradient colors
   gradients: {

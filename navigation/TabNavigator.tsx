@@ -115,6 +115,22 @@ const TabNavigator: React.FC = () => {
       initialRouteName="Dashboard"
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: isDark ? colors.textDisabledDark : colors.textDisabled,
+        tabBarStyle: {
+          backgroundColor: isDark ? colors.surfaceDark : colors.surface,
+          borderTopColor: isDark ? colors.borderDark : colors.border,
+          borderTopWidth: 1,
+          height: Platform.OS === 'ios' ? 85 : 60,
+          paddingBottom: Platform.OS === 'ios' ? 25 : 8,
+          paddingTop: 8,
+          ...styles.shadow,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
+          marginTop: 4,
+        },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName = 'home';
           let badgeCount: number | undefined;
@@ -185,6 +201,10 @@ const TabNavigator: React.FC = () => {
               break;
           }
 
+          const getColorValue = (colorVal: any): string => {
+            return typeof colorVal === 'string' ? colorVal : 'transparent';
+          };
+
           return (
             <View style={styles.labelContainer}>
               <Icon
@@ -196,14 +216,13 @@ const TabNavigator: React.FC = () => {
                     : 'circle-outline'
                 }
                 size={12}
-                color={focused ? colors.primary : 'transparent'}
+                color={focused ? getColorValue(colors.primary) : 'transparent'}
                 style={styles.labelIndicator}
               />
             </View>
           );
         },
-      })}
-      tabBarOptions={tabBarOptions}>
+      })}>
       <Tab.Screen
         name="Dashboard"
         component={DashboardStackNavigator}
