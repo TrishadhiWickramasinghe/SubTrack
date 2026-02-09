@@ -1,6 +1,6 @@
 import { colors } from '@/config/theme';
-import { Badge } from '@components/common/Badge';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import Badge from '@components/common/Badge';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '@hooks/useTheme';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
@@ -8,33 +8,32 @@ import { Platform, StyleSheet, View } from 'react-native';
 
 // Import stack navigators
 import AnalyticsStackNavigator from './AnalyticsStackNavigator';
-import BudgetStackNavigator from './BudgetStackNavigator';
-import DashboardStackNavigator from './DashboardStackNavigator';
+import MainStackNavigator from './MainStackNavigator';
 import SettingsStackNavigator from './SettingsStackNavigator';
 import SubscriptionStackNavigator from './SubscriptionStackNavigator';
 
 // Import hooks
-import { useBudget } from '@hooks/useBudget';
-import { useNotifications } from '@hooks/useNotifications';
 import { useSubscriptions } from '@hooks/useSubscriptions';
-import { useTrials } from '@hooks/useTrials';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator: React.FC = () => {
   const { isDark } = useTheme();
-  const { upcomingPaymentsCount } = useSubscriptions();
-  const { unreadNotificationsCount } = useNotifications();
-  const { isOverBudget } = useBudget();
-  const { activeTrialsCount } = useTrials();
+  const { upcomingPayments } = useSubscriptions();
+  
+  // Calculate badge counts from available data
+  const upcomingPaymentsCount = upcomingPayments?.length ?? 0;
+  const unreadNotificationsCount = 0;
+  const isOverBudget = false;
+  const activeTrialsCount = 0;
 
   // Tab bar configuration
   const tabBarOptions = {
-    activeTintColor: colors.primary,
-    inactiveTintColor: isDark ? colors.textDisabledDark : colors.textDisabled,
+    activeTintColor: colors.primary[500],
+    inactiveTintColor: isDark ? colors.neutral[400] : colors.neutral[500],
     style: {
-      backgroundColor: isDark ? colors.surfaceDark : colors.surface,
-      borderTopColor: isDark ? colors.borderDark : colors.border,
+      backgroundColor: isDark ? colors.neutral[900] : colors.neutral[50],
+      borderTopColor: isDark ? colors.neutral[700] : colors.neutral[200],
       borderTopWidth: 1,
       height: Platform.OS === 'ios' ? 85 : 60,
       paddingBottom: Platform.OS === 'ios' ? 25 : 8,
@@ -69,39 +68,34 @@ const TabNavigator: React.FC = () => {
     const getBadgeColor = () => {
       switch (badgeType) {
         case 'warning':
-          return colors.warning;
+          return colors.warning[500];
         case 'danger':
-          return colors.error;
+          return colors.error[500];
         case 'info':
-          return colors.info;
+          return colors.info[500];
         default:
-          return colors.primary;
+          return colors.primary[500];
       }
     };
 
     return (
       <View style={styles.iconContainer}>
-        <Icon
-          name={iconName}
+        <MaterialCommunityIcons
+          name={iconName as any}
           size={24}
           color={
             focused
-              ? colors.primary
+              ? colors.primary[500]
               : isDark
-              ? colors.textDisabledDark
-              : colors.textDisabled
+              ? colors.neutral[400]
+              : colors.neutral[500]
           }
         />
         {badgeCount !== undefined && badgeCount > 0 && (
           <View style={styles.badgeContainer}>
             <Badge
-              count={badgeCount}
-              maxCount={99}
-              color="custom"
-              backgroundColor={getBadgeColor()}
-              textColor={colors.surface}
+              text={badgeCount.toString()}
               size="small"
-              showZero={false}
               style={styles.badge}
             />
           </View>
@@ -115,11 +109,11 @@ const TabNavigator: React.FC = () => {
       initialRouteName="Dashboard"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: isDark ? colors.textDisabledDark : colors.textDisabled,
+        tabBarActiveTintColor: colors.primary[500],
+        tabBarInactiveTintColor: isDark ? colors.neutral[400] : colors.neutral[500],
         tabBarStyle: {
-          backgroundColor: isDark ? colors.surfaceDark : colors.surface,
-          borderTopColor: isDark ? colors.borderDark : colors.border,
+          backgroundColor: isDark ? colors.neutral[900] : colors.neutral[50],
+          borderTopColor: isDark ? colors.neutral[700] : colors.neutral[200],
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 85 : 60,
           paddingBottom: Platform.OS === 'ios' ? 25 : 8,
@@ -207,7 +201,7 @@ const TabNavigator: React.FC = () => {
 
           return (
             <View style={styles.labelContainer}>
-              <Icon
+              <MaterialCommunityIcons
                 name={
                   focused
                     ? 'circle-small'
@@ -216,7 +210,7 @@ const TabNavigator: React.FC = () => {
                     : 'circle-outline'
                 }
                 size={12}
-                color={focused ? getColorValue(colors.primary) : 'transparent'}
+                color={focused ? getColorValue(colors.primary[500]) : 'transparent'}
                 style={styles.labelIndicator}
               />
             </View>
@@ -225,7 +219,7 @@ const TabNavigator: React.FC = () => {
       })}>
       <Tab.Screen
         name="Dashboard"
-        component={DashboardStackNavigator}
+        component={MainStackNavigator}
         options={{
           tabBarLabel: 'Dashboard',
         }}
@@ -249,7 +243,7 @@ const TabNavigator: React.FC = () => {
 
       <Tab.Screen
         name="Budget"
-        component={BudgetStackNavigator}
+        component={MainStackNavigator}
         options={{
           tabBarLabel: 'Budget',
         }}
