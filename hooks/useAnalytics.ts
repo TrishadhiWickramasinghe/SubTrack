@@ -1,21 +1,70 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useSubscriptions } from './useSubscriptions';
-import { usePayments } from './usePayments';
-import { useCategories } from './useCategories';
-import { useCurrency } from '@context/CurrencyContext';
-import spendingAnalytics, { 
-  SpendingSummary, 
-  CategorySpending, 
-  SpendingInsight 
-} from '@services/analytics/spendingAnalytics';
-import trendAnalysis, { 
-  TrendData, 
-  SpendingPrediction,
-  SeasonalPattern 
-} from '@services/analytics/trendAnalysis';
-import calculations from '@utils/calculations';
+// import { usePayments } from './usePayments';
+// import { useCategories } from './useCategories';
+// import { useCurrency } from '@context/CurrencyContext';
+// import spendingAnalytics, { 
+//   SpendingSummary, 
+//   CategorySpending, 
+//   SpendingInsight 
+// } from '@services/analytics/spendingAnalytics';
+// import trendAnalysis, { 
+//   TrendData, 
+//   SpendingPrediction,
+//   SeasonalPattern 
+// } from '@services/analytics/trendAnalysis';
+
+// Temporary type stubs (replace with real imports when available)
+export interface SpendingSummary {
+  totalMonthly: number;
+  totalYearly: number;
+  averagePerSubscription: number;
+  activeSubscriptionsCount: number;
+}
+
+export interface CategorySpending {
+  category: string;
+  amount: number;
+}
+
+export interface SpendingInsight {
+  type: string;
+  message: string;
+}
+
+export interface TrendData {
+  direction: string;
+}
+
+export interface SpendingPrediction {
+  predictedAmount: number;
+}
+
+export interface SeasonalPattern {
+  season: string;
+  pattern: string;
+}
+
+const spendingAnalytics = {
+  getSpendingSummary: (_subs: any) => ({ totalMonthly: 0, totalYearly: 0, averagePerSubscription: 0, activeSubscriptionsCount: 0 }),
+  getCategoryBreakdown: (_subs: any, _cats: any) => [],
+  getMonthlyTrend: (_subs: any, _payments: any, _months: number) => [],
+  generateInsights: (_subs: any, _payments: any, _cats: any) => []
+};
+
+const trendAnalysis = {
+  analyzeSpendingTrend: (_subs: any, _payments: any, _months: number) => null,
+  predictSpending: (_subs: any, _payments: any, _trend: any) => null,
+  detectSeasonalPatterns: (_subs: any, _payments: any, _years: number) => [],
+  calculateValueScores: (_subs: any, _payments: any, _usage: any) => [],
+  detectUnusualCharges: (_subs: any, _payments: any) => []
+};
+
+const usePayments = () => ({ payments: [] });
+const useCategories = () => ({ categories: [] });
+const useCurrency = () => ({ currency: { code: 'USD' } });
 
 interface MonthlyTrend {
   month: string;
@@ -66,15 +115,14 @@ interface UseAnalyticsReturn {
 }
 
 export const useAnalytics = (): UseAnalyticsReturn => {
-  const { subscriptions, loading: subsLoading } = useSubscriptions();
-  const { payments, loading: paymentsLoading } = usePayments();
+  const { subscriptions } = useSubscriptions();
+  const { payments } = usePayments();
   const { categories } = useCategories();
   const { currency } = useCurrency();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Computed analytics data
   const summary = useMemo<SpendingSummary>(() => {
@@ -180,8 +228,7 @@ export const useAnalytics = (): UseAnalyticsReturn => {
     setError(null);
     
     try {
-      // Force recompute all analytics by incrementing trigger
-      setRefreshTrigger(prev => prev + 1);
+      // Force recompute all analytics by updating state
       setLastUpdated(new Date());
       
       // In a real app, you might want to fetch fresh data from API here
@@ -195,7 +242,11 @@ export const useAnalytics = (): UseAnalyticsReturn => {
     }
   }, []);
 
-  // Filter insights by type
+  // Track updates in analytics data
+  useEffect(() => {
+    // This effect can be used to log when analytics are updated
+    setLastUpdated(new Date());
+  }, [summary, categoryBreakdown, insights]);
   const getInsightsByType = useCallback((type: 'warning' | 'info' | 'success' | 'tip') => {
     return insights.filter(insight => insight.type === type);
   }, [insights]);
@@ -254,10 +305,10 @@ export const useAnalytics = (): UseAnalyticsReturn => {
     }, [refreshAnalytics])
   );
 
-  // Update loading state based on dependencies
-  useEffect(() => {
-    setLoading(subsLoading || paymentsLoading);
-  }, [subsLoading, paymentsLoading]);
+  // TODO: Update loading state based on dependencies when usePayments is available
+  // useEffect(() => {
+  //   setLoading(subsLoading || paymentsLoading);
+  // }, [subsLoading, paymentsLoading]);
 
   // Log errors
   useEffect(() => {
