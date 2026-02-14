@@ -217,7 +217,7 @@ class CurrencyApi {
       if (!conversionRate) {
         // Fetch current rate
         const exchangeRates = await this.getExchangeRates(from);
-        conversionRate = exchangeRates.rates[to];
+        conversionRate = exchangeRates.rates?.[to];
       }
 
       if (!conversionRate) {
@@ -247,6 +247,9 @@ class CurrencyApi {
 
     try {
       const exchangeRates = await this.getExchangeRates(from);
+      if (!exchangeRates.rates) {
+        throw new Error(`No rates found for ${from}`);
+      }
       const rate = exchangeRates.rates[to];
       const decimals = this.getDecimalPlaces(to);
 

@@ -1,543 +1,532 @@
-/**
- * Currency Helper Utilities for SubTrack
- * Comprehensive currency conversion, formatting, and calculation functions
- */
+import { CURRENCIES } from '@config/currencies';
+import { Currency, CurrencyCode, CurrencyFormatOptions } from '@models/currency';
+import calculations from './calculations';
 
-import axios from 'axios';
-import { MMKV } from 'react-native-mmkv';
+export interface FormattedAmount {
+  amount: number;
+  currency: CurrencyCode;
+  symbol: string;
+  formatted: string;
+  decimalPlaces: number;
+}
 
-// Initialize MMKV for fast storage
-const currencyStorage = new MMKV();
+export interface CurrencyComparison {
+  baseAmount: number;
+  baseCurrency: CurrencyCode;
+  convertedAmounts: Array<{
+    currency: CurrencyCode;
+    amount: number;
+    rate: number;
+    formatted: string;
+  }>;
+}
 
-// Currency configuration
-export const CURRENCY_CONFIG = {
-  // Major currencies with symbols and formatting
-  USD: { symbol: '$', name: 'US Dollar', decimalDigits: 2, symbolPosition: 'before' },
-  EUR: { symbol: '€', name: 'Euro', decimalDigits: 2, symbolPosition: 'before' },
-  GBP: { symbol: '£', name: 'British Pound', decimalDigits: 2, symbolPosition: 'before' },
-  JPY: { symbol: '¥', name: 'Japanese Yen', decimalDigits: 0, symbolPosition: 'before' },
-  AUD: { symbol: 'A$', name: 'Australian Dollar', decimalDigits: 2, symbolPosition: 'before' },
-  CAD: { symbol: 'C$', name: 'Canadian Dollar', decimalDigits: 2, symbolPosition: 'before' },
-  CHF: { symbol: 'CHF', name: 'Swiss Franc', decimalDigits: 2, symbolPosition: 'after' },
-  CNY: { symbol: '¥', name: 'Chinese Yuan', decimalDigits: 2, symbolPosition: 'before' },
-  INR: { symbol: '₹', name: 'Indian Rupee', decimalDigits: 2, symbolPosition: 'before' },
-  LKR: { symbol: 'Rs', name: 'Sri Lankan Rupee', decimalDigits: 2, symbolPosition: 'before' },
-  PKR: { symbol: '₨', name: 'Pakistani Rupee', decimalDigits: 2, symbolPosition: 'before' },
-  BDT: { symbol: '৳', name: 'Bangladeshi Taka', decimalDigits: 2, symbolPosition: 'before' },
-  NPR: { symbol: 'Rs', name: 'Nepalese Rupee', decimalDigits: 2, symbolPosition: 'before' },
-  MVR: { symbol: 'Rf', name: 'Maldivian Rufiyaa', decimalDigits: 2, symbolPosition: 'before' },
-  SGD: { symbol: 'S$', name: 'Singapore Dollar', decimalDigits: 2, symbolPosition: 'before' },
-  MYR: { symbol: 'RM', name: 'Malaysian Ringgit', decimalDigits: 2, symbolPosition: 'before' },
-  THB: { symbol: '฿', name: 'Thai Baht', decimalDigits: 2, symbolPosition: 'before' },
-  IDR: { symbol: 'Rp', name: 'Indonesian Rupiah', decimalDigits: 0, symbolPosition: 'before' },
-  KRW: { symbol: '₩', name: 'South Korean Won', decimalDigits: 0, symbolPosition: 'before' },
-  RUB: { symbol: '₽', name: 'Russian Ruble', decimalDigits: 2, symbolPosition: 'after' },
-  BRL: { symbol: 'R$', name: 'Brazilian Real', decimalDigits: 2, symbolPosition: 'before' },
-  ZAR: { symbol: 'R', name: 'South African Rand', decimalDigits: 2, symbolPosition: 'before' },
-  AED: { symbol: 'د.إ', name: 'UAE Dirham', decimalDigits: 2, symbolPosition: 'before' },
-  SAR: { symbol: '﷼', name: 'Saudi Riyal', decimalDigits: 2, symbolPosition: 'before' },
-};
+class CurrencyHelpers {
+  private readonly DEFAULT_OPTIONS: CurrencyFormatOptions = {
+    showSymbol: true,
+    showCode: false,
+    decimalPlaces: 2,
+    grouping: true,
+    fallback: 'N/A',
+  };
 
-// Free exchange rate API endpoints
-export const EXCHANGE_RATE_APIS = {
-  EXCHANGERATE_API: 'https://api.exchangerate-api.com/v4/latest/',
-  FRANKFURTER: 'https://api.frankfurter.app/latest',
-  EXCHANGERATE_HOST: 'https://api.exchangerate.host/latest',
-  CURRENCY_API: 'https://free.currconv.com/api/v7/convert', // Requires API key
-};
+  /**
+   * Format amount with currency symbol
+   */
+  formatAmount(
+    amount: number,
+    currency: CurrencyCode,
+    options: Partial<CurrencyFormatOptions> = {}
+  ): string {
+    const opts = { ...this.DEFAULT_OPTIONS, ...options };
+    const currencyInfo = this.getCurrencyInfo(currency);
+    
+    if (isNaN(amount) || amount === null || amount === undefined) {
+      return opts.fallback || 'N/A';
+    }
 
-// Storage keys
-const STORAGE_KEYS = {
-  EXCHANGE_RATES: 'currency_exchange_rates',
-  LAST_UPDATED: 'currency_last_updated',
-  DEFAULT_CURRENCY: 'default_currency',
-  CURRENCY_HISTORY: 'currency_history',
-};
+    // Handle negative amounts
+    const isNegative = amount < 0;
+    const absoluteAmount = Math.abs(amount);
 
-/**
- * Currency Helper Class
- */
-export class CurrencyHelper {
-  constructor() {
-    this.exchangeRates = {};
-    this.baseCurrency = 'USD';
-    this.lastUpdated = null;
-    this.cacheDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    // Round to appropriate decimal places
+    const roundedAmount = this.roundToDecimalPlaces(
+      absoluteAmount,
+      opts.decimalPlaces || currencyInfo.decimalPlaces
+    );
+
+    // Format number with grouping
+    let formattedNumber = this.formatNumber(roundedAmount, {
+      decimalPlaces: opts.decimalPlaces || currencyInfo.decimalPlaces,
+      grouping: opts.grouping,
+    });
+
+    // Add negative sign if needed
+    if (isNegative) {
+      formattedNumber = `-${formattedNumber}`;
+    }
+
+    // Add currency symbol or code
+    if (opts.showSymbol) {
+      return `${currencyInfo.symbol}${formattedNumber}`;
+    } else if (opts.showCode) {
+      return `${formattedNumber} ${currency}`;
+    }
+
+    return formattedNumber;
   }
 
   /**
-   * Initialize currency helper
+   * Parse formatted currency string back to number
    */
-  async initialize(baseCurrency = 'USD') {
+  parseAmount(formatted: string, currency: CurrencyCode): number | null {
     try {
-      this.baseCurrency = baseCurrency;
+      const currencyInfo = this.getCurrencyInfo(currency);
       
-      // Load cached rates
-      await this.loadCachedRates();
-      
-      // Check if rates need updating
-      const shouldUpdate = !this.lastUpdated || 
-                          (Date.now() - new Date(this.lastUpdated).getTime()) > this.cacheDuration;
-      
-      if (shouldUpdate) {
-        await this.fetchLatestRates();
+      // Remove currency symbol and spaces
+      let cleaned = formatted
+        .replace(currencyInfo.symbol, '')
+        .replace(/\s/g, '')
+        .replace(/,/g, '');
+
+      // Handle negative numbers
+      const isNegative = cleaned.startsWith('-');
+      if (isNegative) {
+        cleaned = cleaned.substring(1);
       }
+
+      const amount = parseFloat(cleaned);
       
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize currency helper:', error);
-      return false;
+      if (isNaN(amount)) {
+        return null;
+      }
+
+      return isNegative ? -amount : amount;
+    } catch {
+      return null;
     }
   }
 
   /**
-   * Load cached exchange rates from storage
+   * Convert amount between currencies
    */
-  async loadCachedRates() {
+  convertAmount(
+    amount: number,
+    from: CurrencyCode,
+    to: CurrencyCode,
+    rates: Record<string, number>
+  ): number {
+    if (from === to) return amount;
+
+    const rate = this.getRate(from, to, rates);
+    if (rate === null) {
+      throw new Error(`No exchange rate found for ${from} to ${to}`);
+    }
+
+    const converted = amount * rate;
+    const decimals = this.getCurrencyInfo(to).decimalPlaces;
+    
+    return this.roundToDecimalPlaces(converted, decimals);
+  }
+
+  /**
+   * Convert amount with proper rounding
+   */
+  convertAmountSafe(
+    amount: number,
+    from: CurrencyCode,
+    to: CurrencyCode,
+    rates: Record<string, number>
+  ): number {
     try {
-      const cachedRates = currencyStorage.getString(STORAGE_KEYS.EXCHANGE_RATES);
-      const lastUpdated = currencyStorage.getString(STORAGE_KEYS.LAST_UPDATED);
-      
-      if (cachedRates && lastUpdated) {
-        this.exchangeRates = JSON.parse(cachedRates);
-        this.lastUpdated = lastUpdated;
-        console.log('Loaded cached exchange rates from', this.lastUpdated);
-      }
-    } catch (error) {
-      console.error('Error loading cached rates:', error);
+      return this.convertAmount(amount, from, to, rates);
+    } catch {
+      return amount; // Return original amount if conversion fails
     }
   }
 
   /**
-   * Fetch latest exchange rates from API
+   * Get exchange rate between two currencies
    */
-  async fetchLatestRates(baseCurrency = null) {
-    try {
-      const base = baseCurrency || this.baseCurrency;
-      
-      // Try multiple API endpoints for redundancy
-      let rates = null;
-      
-      // Try ExchangeRate-API first
+  getRate(
+    from: CurrencyCode,
+    to: CurrencyCode,
+    rates: Record<string, number>
+  ): number | null {
+    if (from === to) return 1;
+
+    // Direct rate
+    if (rates[to]) {
+      return rates[to];
+    }
+
+    // Try inverse rate
+    if (rates[from]) {
+      return 1 / rates[from];
+    }
+
+    // Try through base currency (assuming rates are against USD or EUR)
+    const baseCurrency = 'USD';
+    if (rates[baseCurrency] && rates[to]) {
+      return (1 / rates[baseCurrency]) * rates[to];
+    }
+
+    return null;
+  }
+
+  /**
+   * Get all conversion rates for an amount
+   */
+  getAllConversions(
+    amount: number,
+    from: CurrencyCode,
+    rates: Record<string, number>
+  ): Record<CurrencyCode, number> {
+    const conversions: Partial<Record<CurrencyCode, number>> = {};
+
+    Object.keys(rates).forEach((to) => {
       try {
-        const response = await axios.get(`${EXCHANGE_RATE_APIS.EXCHANGERATE_API}${base}`);
-        if (response.data && response.data.rates) {
-          rates = response.data.rates;
-          console.log('Fetched rates from ExchangeRate-API');
-        }
-      } catch (error) {
-        console.warn('ExchangeRate-API failed, trying Frankfurter...');
+        conversions[to as CurrencyCode] = this.convertAmount(
+          amount,
+          from,
+          to as CurrencyCode,
+          rates
+        );
+      } catch {
+        // Skip if conversion fails
       }
-      
-      // Try Frankfurter if first failed
-      if (!rates) {
-        try {
-          const response = await axios.get(EXCHANGE_RATE_APIS.FRANKFURTER, {
-            params: { base }
-          });
-          if (response.data && response.data.rates) {
-            rates = response.data.rates;
-            console.log('Fetched rates from Frankfurter');
-          }
-        } catch (error) {
-          console.warn('Frankfurter failed, trying ExchangeRate.host...');
-        }
-      }
-      
-      // Try ExchangeRate.host if others failed
-      if (!rates) {
-        try {
-          const response = await axios.get(EXCHANGE_RATE_APIS.EXCHANGERATE_HOST, {
-            params: { base }
-          });
-          if (response.data && response.data.rates) {
-            rates = response.data.rates;
-            console.log('Fetched rates from ExchangeRate.host');
-          }
-        } catch (error) {
-          console.error('All exchange rate APIs failed');
-          throw new Error('Failed to fetch exchange rates');
-        }
-      }
-      
-      // Add base currency with rate 1
-      rates[base] = 1;
-      
-      // Update instance and cache
-      this.exchangeRates = rates;
-      this.lastUpdated = new Date().toISOString();
-      this.baseCurrency = base;
-      
-      // Save to cache
-      await this.saveToCache();
-      
-      console.log('Exchange rates updated successfully');
-      return rates;
-    } catch (error) {
-      console.error('Error fetching exchange rates:', error);
-      throw error;
-    }
+    });
+
+    return conversions as Record<CurrencyCode, number>;
   }
 
   /**
-   * Save rates to cache
+   * Compare amount across multiple currencies
    */
-  async saveToCache() {
-    try {
-      currencyStorage.set(STORAGE_KEYS.EXCHANGE_RATES, JSON.stringify(this.exchangeRates));
-      currencyStorage.set(STORAGE_KEYS.LAST_UPDATED, this.lastUpdated);
-    } catch (error) {
-      console.error('Error saving to cache:', error);
-    }
+  compareCurrencies(
+    amount: number,
+    from: CurrencyCode,
+    currencies: CurrencyCode[],
+    rates: Record<string, number>
+  ): CurrencyComparison {
+    const convertedAmounts = currencies.map(to => {
+      const rate = this.getRate(from, to, rates) || 1;
+      const converted = this.convertAmount(amount, from, to, rates);
+      
+      return {
+        currency: to,
+        amount: converted,
+        rate,
+        formatted: this.formatAmount(converted, to),
+      };
+    });
+
+    return {
+      baseAmount: amount,
+      baseCurrency: from,
+      convertedAmounts,
+    };
   }
 
   /**
-   * Convert amount from one currency to another
+   * Calculate total in base currency
    */
-  convert(amount, fromCurrency, toCurrency) {
-    if (fromCurrency === toCurrency) return amount;
-    
-    // Get exchange rates
-    const fromRate = this.exchangeRates[fromCurrency];
-    const toRate = this.exchangeRates[toCurrency];
-    
-    if (!fromRate || !toRate) {
-      console.warn(`Missing exchange rates for ${fromCurrency} or ${toCurrency}`);
-      return amount; // Return original amount if rates not available
-    }
-    
-    // Convert to base currency first, then to target currency
-    const amountInBase = amount / fromRate;
-    const convertedAmount = amountInBase * toRate;
-    
-    return convertedAmount;
-  }
+  calculateTotalInBase(
+    amounts: Array<{
+      amount: number;
+      currency: CurrencyCode;
+    }>,
+    baseCurrency: CurrencyCode,
+    rates: Record<string, number>
+  ): number {
+    let total = 0;
 
-  /**
-   * Convert and format amount
-   */
-  convertAndFormat(amount, fromCurrency, toCurrency, options = {}) {
-    const convertedAmount = this.convert(amount, fromCurrency, toCurrency);
-    return this.formatCurrency(convertedAmount, toCurrency, options);
-  }
-
-  /**
-   * Format currency amount
-   */
-  formatCurrency(amount, currency = 'USD', options = {}) {
-    const config = CURRENCY_CONFIG[currency] || CURRENCY_CONFIG.USD;
-    const {
-      showSymbol = true,
-      decimalDigits = config.decimalDigits,
-      useGrouping = true,
-      locale = 'en-US',
-      compact = false,
-    } = options;
-    
-    let formattedAmount;
-    
-    if (compact && amount >= 1000) {
-      // Compact formatting for large numbers
-      const formatter = Intl.NumberFormat(locale, {
-        notation: 'compact',
-        compactDisplay: 'short',
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      });
-      formattedAmount = formatter.format(amount);
-    } else {
-      // Regular formatting
-      const formatter = Intl.NumberFormat(locale, {
-        minimumFractionDigits: decimalDigits,
-        maximumFractionDigits: decimalDigits,
-        useGrouping: useGrouping,
-      });
-      formattedAmount = formatter.format(amount);
-    }
-    
-    // Add currency symbol
-    if (showSymbol && config.symbol) {
-      if (config.symbolPosition === 'before') {
-        return `${config.symbol}${formattedAmount}`;
-      } else {
-        return `${formattedAmount} ${config.symbol}`;
+    for (const item of amounts) {
+      try {
+        const converted = this.convertAmount(
+          item.amount,
+          item.currency,
+          baseCurrency,
+          rates
+        );
+        total += converted;
+      } catch {
+        // Skip if conversion fails
       }
     }
-    
-    return formattedAmount;
+
+    const decimals = this.getCurrencyInfo(baseCurrency).decimalPlaces;
+    return this.roundToDecimalPlaces(total, decimals);
   }
 
   /**
-   * Parse currency string to number
+   * Format number with grouping and decimal places
    */
-  parseCurrency(currencyString, currency = 'USD') {
-    if (!currencyString || typeof currencyString !== 'string') {
-      return 0;
+  private formatNumber(
+    amount: number,
+    options: {
+      decimalPlaces: number;
+      grouping: boolean;
     }
-    
-    const config = CURRENCY_CONFIG[currency] || CURRENCY_CONFIG.USD;
-    const symbol = config.symbol;
-    
-    // Remove currency symbol and thousands separators
-    let cleanString = currencyString.trim();
-    
-    // Remove symbol
-    if (symbol) {
-      cleanString = cleanString.replace(new RegExp(`\\${symbol}`, 'g'), '');
+  ): string {
+    let formatted = amount.toFixed(options.decimalPlaces);
+
+    if (options.grouping) {
+      const parts = formatted.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      formatted = parts.join('.');
     }
-    
-    // Remove thousands separators (commas or spaces depending on locale)
-    cleanString = cleanString.replace(/,/g, '');
-    
-    // Parse to number
-    const amount = parseFloat(cleanString);
-    
-    return isNaN(amount) ? 0 : amount;
+
+    return formatted;
+  }
+
+  /**
+   * Round to specific decimal places
+   */
+  roundToDecimalPlaces(amount: number, places: number): number {
+    const factor = Math.pow(10, places);
+    return Math.round(amount * factor) / factor;
+  }
+
+  /**
+   * Get currency information
+   */
+  getCurrencyInfo(code: CurrencyCode): Currency {
+    return CURRENCIES[code] || {
+      code,
+      name: code,
+      symbol: code,
+      flag: '🏳️',
+      decimalPlaces: 2,
+    };
   }
 
   /**
    * Get all supported currencies
    */
-  getSupportedCurrencies() {
-    return Object.entries(CURRENCY_CONFIG).map(([code, config]) => ({
-      code,
-      symbol: config.symbol,
-      name: config.name,
-      decimalDigits: config.decimalDigits,
-      symbolPosition: config.symbolPosition,
-    })).sort((a, b) => a.name.localeCompare(b.name));
+  getAllCurrencies(): Currency[] {
+    return Object.values(CURRENCIES);
   }
 
   /**
-   * Get currency info
+   * Get popular currencies for quick selection
    */
-  getCurrencyInfo(currencyCode) {
-    return CURRENCY_CONFIG[currencyCode] || CURRENCY_CONFIG.USD;
+  getPopularCurrencies(): Currency[] {
+    const popularCodes: CurrencyCode[] = ['USD', 'EUR', 'GBP', 'JPY', 'LKR'];
+    return popularCodes
+      .map(code => CURRENCIES[code])
+      .filter(currency => currency !== undefined);
   }
 
   /**
-   * Calculate total amount for array of items with different currencies
+   * Validate currency code
    */
-  calculateTotal(items, targetCurrency = 'USD') {
-    return items.reduce((total, item) => {
-      const amount = item.amount || 0;
-      const currency = item.currency || 'USD';
-      
-      if (currency === targetCurrency) {
-        return total + amount;
+  isValidCurrency(code: string): code is CurrencyCode {
+    return code in CURRENCIES;
+  }
+
+  /**
+   * Calculate exchange rate trend
+   */
+  calculateRateTrend(
+    historicalRates: Array<{ date: string; rate: number }>
+  ): {
+    direction: 'up' | 'down' | 'stable';
+    percentage: number;
+    average: number;
+    volatility: number;
+  } {
+    if (historicalRates.length < 2) {
+      return {
+        direction: 'stable',
+        percentage: 0,
+        average: historicalRates[0]?.rate || 0,
+        volatility: 0,
+      };
+    }
+
+    const rates = historicalRates.map(r => r.rate);
+    const firstRate = rates[0];
+    const lastRate = rates[rates.length - 1];
+    const percentageChange = ((lastRate - firstRate) / firstRate) * 100;
+
+    let direction: 'up' | 'down' | 'stable' = 'stable';
+    if (percentageChange > 1) direction = 'up';
+    else if (percentageChange < -1) direction = 'down';
+
+    const average = calculations.calculateMean(rates);
+    const volatility = calculations.calculateStandardDeviation(rates);
+
+    return {
+      direction,
+      percentage: Number(percentageChange.toFixed(2)),
+      average,
+      volatility,
+    };
+  }
+
+  /**
+   * Find best currency to convert to
+   */
+  findBestCurrency(
+    amount: number,
+    from: CurrencyCode,
+    rates: Record<string, number>
+  ): {
+    currency: CurrencyCode;
+    amount: number;
+    rate: number;
+  } | null {
+    let bestCurrency: CurrencyCode | null = null;
+    let bestAmount = amount;
+    let bestRate = 1;
+
+    Object.entries(rates).forEach(([to, rate]) => {
+      if (to === from) return;
+
+      const converted = amount * rate;
+      if (converted > bestAmount) {
+        bestAmount = converted;
+        bestCurrency = to as CurrencyCode;
+        bestRate = rate;
       }
-      
-      const convertedAmount = this.convert(amount, currency, targetCurrency);
-      return total + convertedAmount;
-    }, 0);
-  }
+    });
 
-  /**
-   * Calculate monthly amount from different billing cycles
-   */
-  calculateMonthlyAmount(amount, billingCycle, customDays = 30) {
-    switch (billingCycle) {
-      case 'daily':
-        return amount * 30.44; // Average days in month
-      case 'weekly':
-        return amount * 4.345; // Average weeks in month
-      case 'biweekly':
-        return amount * 2.1725; // Every 2 weeks
-      case 'monthly':
-        return amount;
-      case 'bimonthly':
-        return amount / 2;
-      case 'quarterly':
-        return amount / 3;
-      case 'semiannually':
-        return amount / 6;
-      case 'annually':
-        return amount / 12;
-      case 'custom':
-        return (amount / customDays) * 30.44;
-      default:
-        return amount;
+    if (bestCurrency) {
+      return {
+        currency: bestCurrency,
+        amount: bestAmount,
+        rate: bestRate,
+      };
     }
+
+    return null;
   }
 
   /**
-   * Calculate yearly amount from different billing cycles
+   * Split amount by currency
    */
-  calculateYearlyAmount(amount, billingCycle, customDays = 30) {
-    switch (billingCycle) {
-      case 'daily':
-        return amount * 365;
-      case 'weekly':
-        return amount * 52;
-      case 'biweekly':
-        return amount * 26;
-      case 'monthly':
-        return amount * 12;
-      case 'bimonthly':
-        return amount * 6;
-      case 'quarterly':
-        return amount * 4;
-      case 'semiannually':
-        return amount * 2;
-      case 'annually':
-        return amount;
-      case 'custom':
-        return (amount / customDays) * 365;
-      default:
-        return amount * 12;
-    }
+  splitByCurrency(
+    total: number,
+    splits: Array<{
+      percentage: number;
+      currency: CurrencyCode;
+    }>,
+    baseCurrency: CurrencyCode,
+    rates: Record<string, number>
+  ): Array<{
+    currency: CurrencyCode;
+    originalAmount: number;
+    convertedAmount: number;
+    percentage: number;
+  }> {
+    return splits.map(split => {
+      const originalAmount = (total * split.percentage) / 100;
+      const convertedAmount = this.convertAmount(
+        originalAmount,
+        baseCurrency,
+        split.currency,
+        rates
+      );
+
+      return {
+        currency: split.currency,
+        originalAmount,
+        convertedAmount,
+        percentage: split.percentage,
+      };
+    });
   }
 
   /**
-   * Calculate savings percentage
+   * Generate currency summary
    */
-  calculateSavingsPercentage(originalAmount, newAmount) {
-    if (originalAmount <= 0) return 0;
-    
-    const savings = originalAmount - newAmount;
-    const percentage = (savings / originalAmount) * 100;
-    
-    return Math.round(percentage * 100) / 100; // Round to 2 decimal places
-  }
+  generateSummary(
+    amounts: Array<{
+      amount: number;
+      currency: CurrencyCode;
+      category?: string;
+    }>,
+    baseCurrency: CurrencyCode,
+    rates: Record<string, number>
+  ): {
+    total: number;
+    byCurrency: Record<CurrencyCode, number>;
+    byCategory: Record<string, number>;
+    formatted: Record<string, string>;
+  } {
+    const byCurrency: Partial<Record<CurrencyCode, number>> = {};
+    const byCategory: Record<string, number> = {};
+    let total = 0;
 
-  /**
-   * Calculate tax amount
-   */
-  calculateTaxAmount(amount, taxRate) {
-    return amount * (taxRate / 100);
-  }
+    amounts.forEach(item => {
+      // Track by currency
+      byCurrency[item.currency] = (byCurrency[item.currency] || 0) + item.amount;
 
-  /**
-   * Calculate amount with tax
-   */
-  calculateAmountWithTax(amount, taxRate) {
-    const taxAmount = this.calculateTaxAmount(amount, taxRate);
-    return amount + taxAmount;
-  }
+      // Convert to base for total
+      const converted = this.convertAmount(
+        item.amount,
+        item.currency,
+        baseCurrency,
+        rates
+      );
+      total += converted;
 
-  /**
-   * Split amount among participants
-   */
-  splitAmount(amount, participants, options = {}) {
-    const { currency = 'USD', roundTo = 2, equalSplit = true } = options;
-    
-    if (participants <= 0) return [];
-    
-    if (equalSplit) {
-      const share = amount / participants;
-      const roundedShare = this.round(share, roundTo);
-      
-      // Adjust last share to account for rounding
-      const shares = new Array(participants).fill(roundedShare);
-      const total = shares.reduce((sum, s) => sum + s, 0);
-      const difference = amount - total;
-      
-      if (difference !== 0) {
-        shares[shares.length - 1] = this.round(shares[shares.length - 1] + difference, roundTo);
+      // Track by category
+      if (item.category) {
+        byCategory[item.category] = (byCategory[item.category] || 0) + converted;
       }
-      
-      return shares;
-    } else {
-      // For unequal splits, you would pass custom percentages or amounts
-      // This is a placeholder for custom split logic
-      return [];
+    });
+
+    // Format all values
+    const formatted: Record<string, string> = {};
+    Object.entries(byCurrency).forEach(([currency, amount]) => {
+      formatted[currency] = this.formatAmount(amount, currency as CurrencyCode);
+    });
+    formatted.total = this.formatAmount(total, baseCurrency);
+
+    return {
+      total,
+      byCurrency: byCurrency as Record<CurrencyCode, number>,
+      byCategory,
+      formatted,
+    };
+  }
+
+  /**
+   * Detect currency format from string
+   */
+  detectCurrencyFromString(text: string): CurrencyCode | null {
+    // Try to match common currency symbols
+    const symbolMap: Record<string, CurrencyCode> = {
+      '$': 'USD',
+      '€': 'EUR',
+      '£': 'GBP',
+      '¥': 'JPY',
+      '₨': 'LKR',
+      '₹': 'INR',
+      '₩': 'KRW',
+      '₽': 'RUB',
+      '₱': 'PHP',
+      '฿': 'THB',
+    };
+
+    for (const [symbol, currency] of Object.entries(symbolMap)) {
+      if (text.includes(symbol)) {
+        return currency;
+      }
     }
-  }
 
-  /**
-   * Round number to specified decimal places
-   */
-  round(number, decimalPlaces = 2) {
-    const factor = Math.pow(10, decimalPlaces);
-    return Math.round(number * factor) / factor;
-  }
-
-  /**
-   * Format percentage
-   */
-  formatPercentage(value, decimalPlaces = 1) {
-    return `${this.round(value, decimalPlaces)}%`;
-  }
-
-  /**
-   * Check if rates are stale
-   */
-  areRatesStale() {
-    if (!this.lastUpdated) return true;
-    
-    const now = Date.now();
-    const lastUpdate = new Date(this.lastUpdated).getTime();
-    const age = now - lastUpdate;
-    
-    return age > this.cacheDuration;
-  }
-
-  /**
-   * Get exchange rate history (if available)
-   */
-  async getExchangeRateHistory(baseCurrency, targetCurrency, days = 30) {
-    try {
-      // This would typically call a historical rates API
-      // For now, return mock data or implement with a real API
-      console.log(`Getting ${days} days of history for ${baseCurrency} to ${targetCurrency}`);
-      
-      // Placeholder - implement with real API if needed
-      return [];
-    } catch (error) {
-      console.error('Error getting exchange rate history:', error);
-      return [];
+    // Try to match currency codes
+    const upperText = text.toUpperCase();
+    for (const code of Object.keys(CURRENCIES)) {
+      if (upperText.includes(code)) {
+        return code as CurrencyCode;
+      }
     }
+
+    return null;
   }
 }
 
-/**
- * Convenience functions for common currency operations
- */
-
-// Create singleton instance
-const currencyHelper = new CurrencyHelper();
-
-// Initialize helper (call this early in your app)
-export const initCurrencyHelper = async (baseCurrency = 'USD') => {
-  return await currencyHelper.initialize(baseCurrency);
-};
-
-// Export convenience functions
-export const formatCurrency = (amount, currency = 'USD', options = {}) => {
-  return currencyHelper.formatCurrency(amount, currency, options);
-};
-
-export const convertCurrency = (amount, fromCurrency, toCurrency) => {
-  return currencyHelper.convert(amount, fromCurrency, toCurrency);
-};
-
-export const convertAndFormat = (amount, fromCurrency, toCurrency, options = {}) => {
-  return currencyHelper.convertAndFormat(amount, fromCurrency, toCurrency, options);
-};
-
-export const getSupportedCurrencies = () => {
-  return currencyHelper.getSupportedCurrencies();
-};
-
-export const calculateMonthlyAmount = (amount, billingCycle, customDays = 30) => {
-  return currencyHelper.calculateMonthlyAmount(amount, billingCycle, customDays);
-};
-
-export const calculateYearlyAmount = (amount, billingCycle, customDays = 30) => {
-  return currencyHelper.calculateYearlyAmount(amount, billingCycle, customDays);
-};
-
-export const calculateTotal = (items, targetCurrency = 'USD') => {
-  return currencyHelper.calculateTotal(items, targetCurrency);
-};
-
-export const formatPercentage = (value, decimalPlaces = 1) => {
-  return currencyHelper.formatPercentage(value, decimalPlaces);
-};
-
-export const roundCurrency = (amount, decimalPlaces = 2) => {
-  return currencyHelper.round(amount, decimalPlaces);
-};
-
-// Export the helper instance for advanced usage
-export default currencyHelper;
+export default new CurrencyHelpers();

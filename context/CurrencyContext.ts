@@ -1,14 +1,14 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
-// TODO: Install @react-native-community/netinfo
-// import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
-// TODO: Implement storage services
-// import settingsStorage from '@services/storage/settingsStorage';
-// import cacheStorage from '@services/storage/cacheStorage';
-// TODO: Implement exchange rate API
-// import { exchangeRateApi } from '@services/api/exchangeRateApi';
-// TODO: Implement analytics service
-// import { analyticsService } from '@services/analytics/analyticsService';
+import NetInfo from '@react-native-community/netinfo';
+import { NetInfoState } from '@react-native-community/netinfo';
+
+// Import services
+import settingsStorage from '@services/storage/settingsStorage';
+import cacheStorage from '@services/storage/cacheStorage';
+import { exchangeRateApi } from '@services/api/exchangeRateApi';
+import { analyticsService } from '@services/analytics/analyticsService';
+import { useDebounce } from '@hooks/useDebounce';
 
 // Type definitions
 export interface Currency {
@@ -130,6 +130,8 @@ const SUPPORTED_CURRENCIES: Currency[] = [
   { code: 'JPY', name: 'Japanese Yen', symbol: '¥', decimalDigits: 0, flag: '🇯🇵' },
   { code: 'AUD', name: 'Australian Dollar', symbol: 'A$', decimalDigits: 2, flag: '🇦🇺' },
   { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$', decimalDigits: 2, flag: '🇨🇦' },
+  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', decimalDigits: 2, flag: '🇨🇭' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥', decimalDigits: 2, flag: '🇨🇳' },
   
   // Asian currencies
   { code: 'LKR', name: 'Sri Lankan Rupee', symbol: 'Rs', decimalDigits: 2, flag: '🇱🇰' },
@@ -140,43 +142,112 @@ const SUPPORTED_CURRENCIES: Currency[] = [
   { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM', decimalDigits: 2, flag: '🇲🇾' },
   { code: 'THB', name: 'Thai Baht', symbol: '฿', decimalDigits: 2, flag: '🇹🇭' },
   { code: 'PHP', name: 'Philippine Peso', symbol: '₱', decimalDigits: 2, flag: '🇵🇭' },
+  { code: 'VND', name: 'Vietnamese Dong', symbol: '₫', decimalDigits: 0, flag: '🇻🇳' },
+  { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp', decimalDigits: 0, flag: '🇮🇩' },
+  { code: 'KRW', name: 'South Korean Won', symbol: '₩', decimalDigits: 0, flag: '🇰🇷' },
   
   // Middle Eastern currencies
   { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', decimalDigits: 2, flag: '🇦🇪' },
   { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼', decimalDigits: 2, flag: '🇸🇦' },
   { code: 'QAR', name: 'Qatari Riyal', symbol: '﷼', decimalDigits: 2, flag: '🇶🇦' },
+  { code: 'KWD', name: 'Kuwaiti Dinar', symbol: 'د.ك', decimalDigits: 3, flag: '🇰🇼' },
+  { code: 'BHD', name: 'Bahraini Dinar', symbol: '.د.ب', decimalDigits: 3, flag: '🇧🇭' },
+  { code: 'OMR', name: 'Omani Rial', symbol: '﷼', decimalDigits: 3, flag: '🇴🇲' },
+  { code: 'ILS', name: 'Israeli Shekel', symbol: '₪', decimalDigits: 2, flag: '🇮🇱' },
+  { code: 'TRY', name: 'Turkish Lira', symbol: '₺', decimalDigits: 2, flag: '🇹🇷' },
   
-  // European currencies
-  { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF', decimalDigits: 2, flag: '🇨🇭' },
+  // European currencies (non-Euro)
   { code: 'SEK', name: 'Swedish Krona', symbol: 'kr', decimalDigits: 2, flag: '🇸🇪' },
   { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr', decimalDigits: 2, flag: '🇳🇴' },
   { code: 'DKK', name: 'Danish Krone', symbol: 'kr', decimalDigits: 2, flag: '🇩🇰' },
+  { code: 'PLN', name: 'Polish Złoty', symbol: 'zł', decimalDigits: 2, flag: '🇵🇱' },
+  { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč', decimalDigits: 2, flag: '🇨🇿' },
+  { code: 'HUF', name: 'Hungarian Forint', symbol: 'Ft', decimalDigits: 0, flag: '🇭🇺' },
+  { code: 'RON', name: 'Romanian Leu', symbol: 'lei', decimalDigits: 2, flag: '🇷🇴' },
+  { code: 'BGN', name: 'Bulgarian Lev', symbol: 'лв', decimalDigits: 2, flag: '🇧🇬' },
+  { code: 'ISK', name: 'Icelandic Króna', symbol: 'kr', decimalDigits: 0, flag: '🇮🇸' },
   
   // African currencies
   { code: 'ZAR', name: 'South African Rand', symbol: 'R', decimalDigits: 2, flag: '🇿🇦' },
   { code: 'EGP', name: 'Egyptian Pound', symbol: '£', decimalDigits: 2, flag: '🇪🇬' },
   { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', decimalDigits: 2, flag: '🇳🇬' },
+  { code: 'KES', name: 'Kenyan Shilling', symbol: 'KSh', decimalDigits: 2, flag: '🇰🇪' },
+  { code: 'GHS', name: 'Ghanaian Cedi', symbol: '₵', decimalDigits: 2, flag: '🇬🇭' },
+  { code: 'MAD', name: 'Moroccan Dirham', symbol: 'د.م.', decimalDigits: 2, flag: '🇲🇦' },
+  { code: 'TND', name: 'Tunisian Dinar', symbol: 'د.ت', decimalDigits: 3, flag: '🇹🇳' },
   
   // South American currencies
   { code: 'BRL', name: 'Brazilian Real', symbol: 'R$', decimalDigits: 2, flag: '🇧🇷' },
   { code: 'MXN', name: 'Mexican Peso', symbol: '$', decimalDigits: 2, flag: '🇲🇽' },
   { code: 'ARS', name: 'Argentine Peso', symbol: '$', decimalDigits: 2, flag: '🇦🇷' },
+  { code: 'CLP', name: 'Chilean Peso', symbol: '$', decimalDigits: 0, flag: '🇨🇱' },
+  { code: 'COP', name: 'Colombian Peso', symbol: '$', decimalDigits: 0, flag: '🇨🇴' },
+  { code: 'PEN', name: 'Peruvian Sol', symbol: 'S/', decimalDigits: 2, flag: '🇵🇪' },
+  { code: 'UYU', name: 'Uruguayan Peso', symbol: '$', decimalDigits: 2, flag: '🇺🇾' },
+  { code: 'VES', name: 'Venezuelan Bolívar', symbol: 'Bs', decimalDigits: 2, flag: '🇻🇪' },
+  
+  // Oceanian currencies
+  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$', decimalDigits: 2, flag: '🇳🇿' },
+  { code: 'FJD', name: 'Fijian Dollar', symbol: 'FJ$', decimalDigits: 2, flag: '🇫🇯' },
+  { code: 'PGK', name: 'Papua New Guinean Kina', symbol: 'K', decimalDigits: 2, flag: '🇵🇬' },
 ];
 
 // Default exchange rates (fallback when offline)
 const DEFAULT_EXCHANGE_RATES: ExchangeRates = {
   USD: 1,
-  LKR: 300,
   EUR: 0.92,
   GBP: 0.79,
   JPY: 150,
   AUD: 1.52,
   CAD: 1.35,
+  CHF: 0.89,
+  CNY: 7.23,
+  LKR: 300,
   INR: 83,
+  PKR: 278,
+  BDT: 109,
   SGD: 1.34,
   MYR: 4.69,
   THB: 35.5,
   PHP: 56.5,
+  VND: 25400,
+  IDR: 15600,
+  KRW: 1350,
+  AED: 3.67,
+  SAR: 3.75,
+  QAR: 3.64,
+  KWD: 0.31,
+  BHD: 0.38,
+  OMR: 0.38,
+  ILS: 3.68,
+  TRY: 31.5,
+  SEK: 10.5,
+  NOK: 10.8,
+  DKK: 6.9,
+  PLN: 4.0,
+  CZK: 23.5,
+  HUF: 365,
+  RON: 4.6,
+  BGN: 1.8,
+  ISK: 138,
+  ZAR: 18.7,
+  EGP: 47.5,
+  NGN: 1550,
+  KES: 145,
+  GHS: 14.5,
+  MAD: 10.1,
+  TND: 3.1,
+  BRL: 5.05,
+  MXN: 16.8,
+  ARS: 870,
+  CLP: 970,
+  COP: 3900,
+  PEN: 3.75,
+  UYU: 38.5,
+  VES: 36.3,
+  NZD: 1.66,
+  FJD: 2.23,
+  PGK: 3.78,
 };
 
 // Initial state
@@ -204,51 +275,6 @@ const initialState: CurrencyState = {
 
 // Create context
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
-
-// Stub implementations for services not yet created
-// TODO: Implement proper services
-type NetInfoState = { isConnected: boolean | null };
-
-const NetInfo = {
-  addEventListener: (callback: (state: NetInfoState) => void) => {
-    return () => {};
-  },
-};
-
-const settingsStorage = {
-  getSettings: async () => ({
-    currency: {
-      primary: 'USD',
-      secondary: 'EUR',
-      showSecondary: false,
-      autoUpdateRates: true,
-      updateFrequency: 'daily' as const,
-      lastUpdate: null,
-      rates: {} as ExchangeRates,
-    },
-    preferences: { currencyFormat: 'symbol' as const, showDecimals: true },
-  }),
-  updateExchangeRates: async (rates: ExchangeRates) => {},
-  setLastExchangeRateUpdate: async () => {},
-  setPrimaryCurrency: async (code: string) => {},
-  setSecondaryCurrency: async (code: string) => {},
-  toggleSecondaryCurrency: async (show: boolean) => {},
-  updateSetting: async (key: string, value: any) => {},
-};
-
-const cacheStorage = {
-  getCachedExchangeRates: async (base?: string) => null as ExchangeRates | null,
-  cacheExchangeRates: async (base: string, rates: ExchangeRates) => {},
-  clearByPrefix: async (prefix: string) => {},
-};
-
-const exchangeRateApi = {
-  getLatestRates: async (base: string) => ({ EUR: 0.92, GBP: 0.79 } as ExchangeRates),
-};
-
-const analyticsService = {
-  trackEvent: async (event: string, props?: any) => {},
-};
 
 // Custom hook to use currency context
 export const useCurrency = (): CurrencyContextType => {
@@ -311,6 +337,7 @@ interface CurrencyProviderProps {
 export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }): React.ReactElement => {
   const [state, setState] = useState<CurrencyState>(initialState);
   const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);
+  const debouncedPrimaryCurrency = useDebounce(state.primaryCurrency, 1000);
 
   /**
    * INITIALIZATION
@@ -329,6 +356,13 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
       unsubscribe();
     };
   }, []);
+
+  // Auto-update rates when primary currency changes
+  useEffect(() => {
+    if (debouncedPrimaryCurrency && state.autoUpdateRates) {
+      updateExchangeRates(debouncedPrimaryCurrency);
+    }
+  }, [debouncedPrimaryCurrency]);
 
   const handleAppStateChange = useCallback((nextAppState: AppStateStatus) => {
     setAppState(nextAppState);
@@ -371,6 +405,20 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
       if (cachedRates) {
         exchangeRates = cachedRates;
         ratesSource = 'cache';
+        
+        // Update cache status
+        const cacheAge = ratesLastUpdated 
+          ? getTimeSince(ratesLastUpdated)
+          : null;
+        
+        setState(prev => ({
+          ...prev,
+          cacheStatus: {
+            hasCachedRates: true,
+            cacheAge,
+            cacheSize: JSON.stringify(cachedRates).length,
+          },
+        }));
       } else if (currencySettings.rates && Object.keys(currencySettings.rates).length > 0) {
         exchangeRates = currencySettings.rates;
         ratesSource = 'settings';
@@ -399,6 +447,12 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
         updateExchangeRates(currencySettings.primary);
       }
       
+      // Track initialization
+      await analyticsService.trackEvent('currency_initialized', {
+        primaryCurrency: currencySettings.primary,
+        ratesSource,
+      });
+      
     } catch (error) {
       console.error('Error initializing currency:', error);
       setState(prev => ({
@@ -406,11 +460,31 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
         error: 'Failed to initialize currency settings',
         isLoadingRates: false,
       }));
+      
+      await analyticsService.trackEvent('currency_init_error', {
+        error: (error as Error).message,
+      });
     }
   }, []);
 
+  const getTimeSince = (dateString: string): string => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+  };
+
   const shouldUpdateRates = useCallback((currencySettings: CurrencySettings): boolean => {
     if (!currencySettings.autoUpdateRates) return false;
+    if (!state.isOnline) return false;
     
     const lastUpdate = currencySettings.lastUpdate;
     if (!lastUpdate) return true;
@@ -429,14 +503,13 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
       default:
         return hoursSinceUpdate >= 24;
     }
-  }, []);
+  }, [state.isOnline]);
 
   const checkAndUpdateRates = useCallback(async () => {
     try {
       const settings = await settingsStorage.getSettings();
       if (shouldUpdateRates(settings.currency)) {
-        // updateExchangeRates will be called after it's defined
-        // This is a placeholder callback
+        await updateExchangeRates();
       }
     } catch (error) {
       console.error('Error checking rates update:', error);
@@ -445,8 +518,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
 
   const handleConnectionRestored = useCallback(async () => {
     if (state.autoUpdateRates) {
-      // updateExchangeRates will be called after it's defined
-      // This is a placeholder callback
+      await updateExchangeRates();
     }
   }, [state.autoUpdateRates]);
 
@@ -454,6 +526,14 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
    * EXCHANGE RATE MANAGEMENT
    */
   const updateExchangeRates = useCallback(async (baseCurrency: string = state.primaryCurrency) => {
+    if (!state.isOnline) {
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Cannot update rates while offline',
+      }));
+      return;
+    }
+
     try {
       setState(prev => ({ ...prev, isUpdatingRates: true, error: null }));
       
@@ -461,42 +541,46 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
       let source: CurrencyState['ratesSource'] = 'api';
       
       // Try to fetch from API
-      if (state.isOnline) {
-        try {
-          rates = await exchangeRateApi.getLatestRates(baseCurrency);
-          
-          // Save to cache
-          await cacheStorage.cacheExchangeRates(baseCurrency, rates);
-          
-          // Update settings
-          await settingsStorage.updateExchangeRates(rates);
-          await settingsStorage.setLastExchangeRateUpdate();
-          
-          // Track analytics
-          await analyticsService.trackEvent('exchange_rates_updated', {
-            source: 'api',
-            baseCurrency,
-            ratesCount: Object.keys(rates).length,
-          });
-          
-        } catch (apiError) {
-          console.warn('Failed to fetch exchange rates from API:', apiError);
-          source = 'cache';
-          
-          // Fall back to cached rates
-          rates = await cacheStorage.getCachedExchangeRates(baseCurrency) || 
-                  state.exchangeRates;
-          
-          await analyticsService.trackEvent('exchange_rates_fallback', {
-            source: 'cache',
-            baseCurrency,
-          });
-        }
-      } else {
-        // Offline - use cached rates
+      try {
+        rates = await exchangeRateApi.getLatestRates(baseCurrency);
+        
+        // Save to cache
+        await cacheStorage.cacheExchangeRates(baseCurrency, rates);
+        
+        // Update settings
+        await settingsStorage.updateExchangeRates(rates);
+        await settingsStorage.setLastExchangeRateUpdate();
+        
+        // Update cache status
+        setState(prev => ({
+          ...prev,
+          cacheStatus: {
+            hasCachedRates: true,
+            cacheAge: 'Just now',
+            cacheSize: JSON.stringify(rates).length,
+          },
+        }));
+        
+        // Track analytics
+        await analyticsService.trackEvent('exchange_rates_updated', {
+          source: 'api',
+          baseCurrency,
+          ratesCount: Object.keys(rates).length,
+        });
+        
+      } catch (apiError) {
+        console.warn('Failed to fetch exchange rates from API:', apiError);
         source = 'cache';
+        
+        // Fall back to cached rates
         rates = await cacheStorage.getCachedExchangeRates(baseCurrency) || 
                 state.exchangeRates;
+        
+        await analyticsService.trackEvent('exchange_rates_fallback', {
+          source: 'cache',
+          baseCurrency,
+          error: (apiError as Error).message,
+        });
       }
       
       const now = new Date().toISOString();
@@ -530,12 +614,10 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
   const convertAmount = useCallback((amount: number, fromCurrency: string, toCurrency: string): number => {
     try {
       if (!amount || amount === 0) return 0;
+      if (fromCurrency === toCurrency) return amount;
       
       const amountNum = typeof amount === 'string' ? parseFloat(amount) : amount;
       if (isNaN(amountNum)) return 0;
-      
-      // If same currency, return same amount
-      if (fromCurrency === toCurrency) return amountNum;
       
       // Get rates
       const fromRate = state.exchangeRates[fromCurrency];
@@ -546,11 +628,11 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
         return amountNum;
       }
       
-      // Convert to USD first (since our rates are based on USD)
-      const amountInUSD = amountNum / fromRate;
+      // Convert to base currency (USD) first
+      const amountInBase = amountNum / fromRate;
       
       // Then convert to target currency
-      let convertedAmount = amountInUSD * toRate;
+      let convertedAmount = amountInBase * toRate;
       
       // Round to appropriate decimal places
       const currencyInfo = SUPPORTED_CURRENCIES.find(c => c.code === toCurrency);
@@ -581,24 +663,32 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
       } = options;
       
       let formattedAmount: string;
+      const absAmount = Math.abs(amount);
+      const sign = amount < 0 ? '-' : '';
       
       // Handle compact notation (1K, 1M, etc.)
-      if (compact && amount >= 1000) {
+      if (compact && absAmount >= 1000) {
         const suffixes = ['', 'K', 'M', 'B', 'T'];
-        const tier = Math.floor(Math.log10(Math.abs(amount)) / 3);
+        const tier = Math.floor(Math.log10(absAmount) / 3);
         
         if (tier > 0 && tier < suffixes.length) {
-          const scaled = amount / Math.pow(1000, tier);
+          const scaled = absAmount / Math.pow(1000, tier);
           formattedAmount = scaled.toFixed(1) + suffixes[tier];
         } else {
-          formattedAmount = amount.toFixed(decimalPlaces);
+          formattedAmount = absAmount.toLocaleString(locale, {
+            minimumFractionDigits: decimalPlaces,
+            maximumFractionDigits: decimalPlaces,
+          });
         }
       } else {
-        formattedAmount = amount.toLocaleString(locale, {
+        formattedAmount = absAmount.toLocaleString(locale, {
           minimumFractionDigits: decimalPlaces,
           maximumFractionDigits: decimalPlaces,
         });
       }
+      
+      // Add sign back
+      formattedAmount = sign + formattedAmount;
       
       // Build the formatted string
       let result = '';
@@ -696,9 +786,6 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
       // Update settings
       await settingsStorage.setPrimaryCurrency(currencyCode);
       
-      // Update exchange rates for new base currency
-      await updateExchangeRates(currencyCode);
-      
       setState(prev => ({
         ...prev,
         primaryCurrency: currencyCode,
@@ -718,7 +805,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
         isLoadingRates: false,
       }));
     }
-  }, [updateExchangeRates]);
+  }, []);
 
   const setSecondaryCurrency = useCallback(async (currencyCode: string): Promise<void> => {
     try {
@@ -775,11 +862,16 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
         autoUpdateRates: enabled,
       }));
       
+      // If enabling, update rates immediately
+      if (enabled && state.isOnline) {
+        await updateExchangeRates();
+      }
+      
     } catch (error) {
       console.error('Error setting auto-update:', error);
       setState(prev => ({ ...prev, error: 'Failed to set auto-update' }));
     }
-  }, []);
+  }, [state.isOnline, updateExchangeRates]);
 
   const setUpdateFrequency = useCallback(async (frequency: 'hourly' | 'daily' | 'weekly'): Promise<void> => {
     try {
@@ -828,150 +920,17 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }):
         exchangeRates: DEFAULT_EXCHANGE_RATES,
         ratesSource: 'default',
         ratesLastUpdated: null,
+        cacheStatus: {
+          hasCachedRates: false,
+          cacheAge: null,
+          cacheSize: 0,
+        },
         isLoadingRates: false,
       }));
       
-      // Fetch fresh rates
+      // Fetch fresh rates if online
       if (state.isOnline) {
         await updateExchangeRates();
       }
       
-      // Track analytics
-      await analyticsService.trackEvent('currency_cache_cleared');
-      
-    } catch (error) {
-      console.error('Error clearing currency cache:', error);
-      setState(prev => ({
-        ...prev,
-        error: 'Failed to clear currency cache',
-        isLoadingRates: false,
-      }));
-    }
-  }, [state.isOnline, updateExchangeRates]);
-
-  /**
-   * UTILITY FUNCTIONS
-   */
-  const getCurrencyInfo = useCallback((currencyCode: string): Currency => {
-    return SUPPORTED_CURRENCIES.find(c => c.code === currencyCode) || {
-      code: currencyCode,
-      name: currencyCode,
-      symbol: currencyCode,
-      decimalDigits: 2,
-      flag: '🏳️',
-    };
-  }, []);
-
-  const getAllCurrencies = useCallback((): Currency[] => {
-    return SUPPORTED_CURRENCIES;
-  }, []);
-
-  const getRate = useCallback((currencyCode: string): number => {
-    return state.exchangeRates[currencyCode] || 1;
-  }, [state.exchangeRates]);
-
-  const getRatesAge = useCallback((): string => {
-    if (!state.ratesLastUpdated) return 'Never';
-    
-    const now = new Date();
-    const lastUpdate = new Date(state.ratesLastUpdated);
-    const diffMinutes = Math.floor((now.getTime() - lastUpdate.getTime()) / (1000 * 60));
-    
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
-  }, [state.ratesLastUpdated]);
-
-  /**
-   * ERROR HANDLING
-   */
-  const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
-  }, []);
-
-  /**
-   * PROVIDER VALUE
-   */
-  const value: CurrencyContextType = useMemo(() => ({
-    // State
-    ...state,
-    
-    // Currency information
-    getCurrencyInfo,
-    getAllCurrencies,
-    getRate,
-    getRatesAge,
-    
-    // Conversion functions
-    convertAmount,
-    formatAmount,
-    formatAmountWithConversion,
-    convertSubscriptionAmounts,
-    calculateTotalInCurrency,
-    
-    // Settings management
-    setPrimaryCurrency,
-    setSecondaryCurrency,
-    toggleSecondaryCurrency,
-    setAutoUpdateRates,
-    setUpdateFrequency,
-    setCurrencyFormat,
-    
-    // Rate management
-    updateExchangeRates,
-    
-    // Cache management
-    clearCurrencyCache,
-    
-    // Error handling
-    clearError,
-  }), [
-    state,
-    getCurrencyInfo,
-    getAllCurrencies,
-    getRate,
-    getRatesAge,
-    convertAmount,
-    formatAmount,
-    formatAmountWithConversion,
-    convertSubscriptionAmounts,
-    calculateTotalInCurrency,
-    setPrimaryCurrency,
-    setSecondaryCurrency,
-    toggleSecondaryCurrency,
-    setAutoUpdateRates,
-    setUpdateFrequency,
-    setCurrencyFormat,
-    updateExchangeRates,
-    clearCurrencyCache,
-    clearError,
-  ]);
-
-  // TODO: Add React.ReactNode type for JSX
-  return React.createElement(
-    CurrencyContext.Provider,
-    { value },
-    children
-  ) as any;
-};
-
-// Higher-order component for currency context
-export const withCurrency = <P extends object>(
-  Component: React.ComponentType<P>
-): React.FC<P> => {
-  return function WrappedComponent(props: P) {
-    return React.createElement(
-      CurrencyProvider,
-      null,
-      React.createElement(Component, props as any)
-    ) as any;
-  };
-};
-
-// Default export
-export default CurrencyContext;
+     
