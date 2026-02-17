@@ -3,6 +3,44 @@
  * Comprehensive currency data with formatting and conversion support
  */
 
+// Type Definitions
+interface CurrencyData {
+  code: string;
+  name: string;
+  symbol: string;
+  symbolNative: string;
+  decimalDigits: number;
+  rounding: number;
+  symbolPosition: 'before' | 'after';
+  decimalSeparator: string;
+  thousandsSeparator: string;
+  locale: string;
+  isMajor: boolean;
+  isCrypto: boolean;
+  region: string;
+  subUnit: string;
+  subUnitToUnit: number;
+  isoNumeric: number;
+  priority: number;
+  color: string;
+}
+
+interface FormatOptions {
+  format?: string;
+  locale?: string;
+  showSymbol?: boolean;
+  compact?: boolean;
+}
+
+interface CurrencyOption {
+  label: string;
+  value: string;
+  symbol: string;
+  decimalDigits: number;
+  symbolPosition: 'before' | 'after';
+  color: string;
+}
+
 // Base currency codes and information
 export const Currency = {
   USD: 'USD', // United States Dollar
@@ -384,26 +422,26 @@ export const CurrencyHelpers = {
   /**
    * Get currency by code
    */
-  getCurrencyByCode(currencyCode) {
-    return CURRENCIES.find(currency => currency.code === currencyCode) || 
-           CURRENCIES.find(currency => currency.code === Currency.USD);
+  getCurrencyByCode(currencyCode: string): CurrencyData | undefined {
+    return (CURRENCIES as CurrencyData[]).find(currency => currency.code === currencyCode) ||
+           (CURRENCIES as CurrencyData[]).find(currency => currency.code === Currency.USD);
   },
 
   /**
    * Get all currencies as options for dropdown
    */
-  getCurrencyOptions(group = null) {
-    let currencies = CURRENCIES;
+  getCurrencyOptions(group: string | null = null): CurrencyOption[] {
+    let currencies: CurrencyData[] = (CURRENCIES as CurrencyData[]);
     
-    if (group && CurrencyGroups[group]) {
-      currencies = CURRENCIES.filter(currency => 
-        CurrencyGroups[group].includes(currency.code)
+    if (group && (CurrencyGroups as Record<string, string[]>)[group]) {
+      currencies = (CURRENCIES as CurrencyData[]).filter(currency => 
+        (CurrencyGroups as Record<string, string[]>)[group].includes(currency.code)
       );
     }
     
     return currencies
-      .sort((a, b) => a.priority - b.priority)
-      .map(currency => ({
+      .sort((a: CurrencyData, b: CurrencyData) => a.priority - b.priority)
+      .map((currency: CurrencyData) => ({
         label: `${currency.name} (${currency.code})`,
         value: currency.code,
         symbol: currency.symbol,
@@ -416,11 +454,10 @@ export const CurrencyHelpers = {
   /**
    * Format amount with currency
    */
-  formatAmount(amount, currencyCode, options = {}) {
+  formatAmount(amount: number | string, currencyCode: string, options: FormatOptions = {}): string {
     const currency = this.getCurrencyByCode(currencyCode);
     const {
-      format = 'standard',
-      locale = currency.locale || 'en-US',
+      locale = currency?.locale || 'en-US',
       showSymbol = true,
       compact = false,
     } = options;
@@ -428,13 +465,13 @@ export const CurrencyHelpers = {
     const amountNumber = typeof amount === 'string' ? parseFloat(amount) : amount;
     
     if (isNaN(amountNumber)) {
-      return showSymbol ? `${currency.symbol}0.00` : '0.00';
+      return showSymbol ? `${currency?.symbol}0.00` : '0.00';
     }
     
     let formattedAmount;
     
     if (compact && Math.abs(amountNumber) >= 1000) {
-      const formatter = Intl.NumberFormat(locale, {
+      const formatter = new Intl.NumberFormat(locale, {
         notation: 'compact',
         compactDisplay: 'short',
         minimumFractionDigits: 1,
@@ -442,16 +479,16 @@ export const CurrencyHelpers = {
       });
       formattedAmount = formatter.format(amountNumber);
     } else {
-      const formatter = Intl.NumberFormat(locale, {
+      const formatter = new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: currencyCode,
-        minimumFractionDigits: currency.decimalDigits,
-        maximumFractionDigits: currency.decimalDigits,
+        minimumFractionDigits: currency?.decimalDigits || 2,
+        maximumFractionDigits: currency?.decimalDigits || 2,
       });
       formattedAmount = formatter.format(amountNumber);
     }
     
-    if (!showSymbol) {
+    if (!showSymbol && currency) {
       // Remove currency symbol if not needed
       const symbolRegex = new RegExp(`[${currency.symbol}${currency.symbolNative}]`, 'g');
       formattedAmount = formattedAmount.replace(symbolRegex, '').trim();
@@ -463,12 +500,14 @@ export const CurrencyHelpers = {
   /**
    * Parse currency string to number
    */
-  parseAmount(amountString, currencyCode) {
+  parseAmount(amountString: string | null | undefined, currencyCode: string): number {
     if (!amountString || typeof amountString !== 'string') {
       return 0;
     }
     
     const currency = this.getCurrencyByCode(currencyCode);
+    
+    if (!currency) return 0;
     
     // Remove currency symbols
     let cleanString = amountString.trim();
@@ -491,7 +530,7 @@ export const CurrencyHelpers = {
   /**
    * Convert amount between currencies
    */
-  convertAmount(amount, fromCurrency, toCurrency, exchangeRate) {
+  convertAmount(amount: number, fromCurrency: string, toCurrency: string, exchangeRate: number): number {
     if (fromCurrency === toCurrency) return amount;
     
     if (!exchangeRate || exchangeRate <= 0) {
@@ -505,56 +544,56 @@ export const CurrencyHelpers = {
   /**
    * Get symbol for currency
    */
-  getCurrencySymbol(currencyCode) {
+  getCurrencySymbol(currencyCode: string): string {
     const currency = this.getCurrencyByCode(currencyCode);
-    return currency.symbol;
+    return currency?.symbol || '$';
   },
 
   /**
    * Get decimal places for currency
    */
-  getDecimalDigits(currencyCode) {
+  getDecimalDigits(currencyCode: string): number {
     const currency = this.getCurrencyByCode(currencyCode);
-    return currency.decimalDigits;
+    return currency?.decimalDigits || 2;
   },
 
   /**
    * Get locale for currency
    */
-  getCurrencyLocale(currencyCode) {
+  getCurrencyLocale(currencyCode: string): string {
     const currency = this.getCurrencyByCode(currencyCode);
-    return currency.locale;
+    return currency?.locale || 'en-US';
   },
 
   /**
    * Check if currency is major
    */
-  isMajorCurrency(currencyCode) {
+  isMajorCurrency(currencyCode: string): boolean {
     const currency = this.getCurrencyByCode(currencyCode);
-    return currency.isMajor;
+    return currency?.isMajor || false;
   },
 
   /**
    * Get currency region
    */
-  getCurrencyRegion(currencyCode) {
+  getCurrencyRegion(currencyCode: string): string {
     const currency = this.getCurrencyByCode(currencyCode);
-    return currency.region;
+    return currency?.region || 'Unknown';
   },
 
   /**
    * Get currency color
    */
-  getCurrencyColor(currencyCode) {
+  getCurrencyColor(currencyCode: string): string {
     const currency = this.getCurrencyByCode(currencyCode);
-    return currency.color || '#6366F1';
+    return currency?.color || '#6366F1';
   },
 
   /**
    * Sort currencies by priority
    */
-  sortCurrenciesByPriority(currencies) {
-    return currencies.sort((a, b) => {
+  sortCurrenciesByPriority(currencies: string[]): string[] {
+    return currencies.sort((a: string, b: string) => {
       const currencyA = this.getCurrencyByCode(a);
       const currencyB = this.getCurrencyByCode(b);
       return (currencyA?.priority || 999) - (currencyB?.priority || 999);
@@ -564,24 +603,24 @@ export const CurrencyHelpers = {
   /**
    * Get popular currencies for region
    */
-  getPopularCurrenciesForRegion(region) {
-    return CURRENCIES
+  getPopularCurrenciesForRegion(region: string): string[] {
+    return (CURRENCIES as CurrencyData[])
       .filter(currency => currency.region === region)
-      .sort((a, b) => a.priority - b.priority)
-      .map(currency => currency.code);
+      .sort((a: CurrencyData, b: CurrencyData) => a.priority - b.priority)
+      .map((currency: CurrencyData) => currency.code);
   },
 
   /**
    * Auto-detect currency from locale
    */
-  detectCurrencyFromLocale(locale) {
+  detectCurrencyFromLocale(locale: string): string {
     // Extract country code from locale
     const countryCode = locale.split('-')[1]?.toUpperCase();
     
     if (!countryCode) return Currency.USD;
     
     // Map country codes to currencies
-    const countryToCurrency = {
+    const countryToCurrency: Record<string, string> = {
       US: Currency.USD,
       LK: Currency.LKR,
       GB: Currency.GBP,
@@ -608,8 +647,8 @@ export const CurrencyHelpers = {
 };
 
 // Default currency settings
-export const DEFAULT_CURRENCY = Currency.USD;
-export const SUPPORTED_CURRENCIES = CURRENCIES.map(currency => currency.code);
+export const DEFAULT_CURRENCY: string = Currency.USD;
+export const SUPPORTED_CURRENCIES: string[] = (CURRENCIES as CurrencyData[]).map(currency => currency.code);
 
 // Exchange rate APIs (free)
 export const EXCHANGE_RATE_APIS = {
