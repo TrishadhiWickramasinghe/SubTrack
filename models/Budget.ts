@@ -3,7 +3,11 @@
  * For managing spending limits and budget tracking
  */
 
+// @ts-ignore - UUID types not available
 import { v4 as uuidv4 } from 'uuid';
+
+// TypeScript declarations for uuid if needed
+declare const __uuid_brand: unique symbol;
 
 // Budget periods
 export const BudgetPeriod = {
@@ -43,7 +47,79 @@ export const AlertThreshold = {
  * Budget class for managing spending limits
  */
 export default class Budget {
-  constructor(data = {}) {
+  // Core identification
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  
+  // Basic information
+  name: string;
+  description: string;
+  type: string;
+  period: string;
+  icon: string;
+  color: string;
+  
+  // Target entity
+  targetId: string | null;
+  targetName: string;
+  
+  // Budget amounts
+  amount: number;
+  currency: string;
+  adjustments: number;
+  effectiveAmount: number;
+  
+  // Period details
+  startDate: string;
+  endDate: string;
+  isRecurring: boolean;
+  rolloverEnabled: boolean;
+  rolloverAmount: number;
+  rolloverFrom: string | null;
+  
+  // Tracking
+  currentSpending: number;
+  projectedSpending: number;
+  remainingAmount: number;
+  percentageUsed: number;
+  
+  // Alerts and notifications
+  alertsEnabled: boolean;
+  alertThresholds: any[];
+  alertHistory: any[];
+  
+  // Rules and restrictions
+  allowOverspending: boolean;
+  maxOverspending: number;
+  autoPauseSubscriptions: boolean;
+  pauseThreshold: number;
+  
+  // Historical data
+  previousPeriods: any[];
+  spendingTrend: number;
+  averageSpending: number;
+  
+  // Goals and savings
+  hasGoal: boolean;
+  goalAmount: number;
+  goalDescription: string;
+  savingsFromBudget: number;
+  
+  // User preferences
+  isActive: boolean;
+  isDefault: boolean;
+  priority: number;
+  notes: string;
+  tags: string[];
+  
+  // Metadata
+  version: number;
+  isDeleted: boolean;
+  deletedAt: string | null;
+  syncStatus: string;
+
+  constructor(data: any = {}) {
     // Core identification
     this.id = data.id || uuidv4();
     this.createdAt = data.createdAt || new Date().toISOString();
@@ -125,21 +201,21 @@ export default class Budget {
   /**
    * Calculate effective amount (including rollover and adjustments)
    */
-  calculateEffectiveAmount() {
+  calculateEffectiveAmount(): number {
     return this.amount + this.rolloverAmount + this.adjustments;
   }
 
   /**
    * Calculate remaining amount
    */
-  calculateRemainingAmount() {
+  calculateRemainingAmount(): number {
     return Math.max(0, this.effectiveAmount - this.currentSpending);
   }
 
   /**
    * Calculate percentage of budget used
    */
-  calculatePercentageUsed() {
+  calculatePercentageUsed(): number {
     if (this.effectiveAmount <= 0) return 0;
     return Math.min(100, (this.currentSpending / this.effectiveAmount) * 100);
   }
@@ -147,7 +223,7 @@ export default class Budget {
   /**
    * Get period start date based on period type
    */
-  getPeriodStartDate(referenceDate = null) {
+  getPeriodStartDate(referenceDate: Date | string | null = null): string {
     const date = referenceDate ? new Date(referenceDate) : new Date();
     
     switch (this.period) {
@@ -173,7 +249,7 @@ export default class Budget {
   /**
    * Get period end date based on period type
    */
-  getPeriodEndDate(referenceDate = null) {
+  getPeriodEndDate(referenceDate: Date | string | null = null): string {
     const startDate = new Date(this.getPeriodStartDate(referenceDate));
     
     switch (this.period) {
@@ -200,7 +276,7 @@ export default class Budget {
   /**
    * Update spending amount
    */
-  updateSpending(amount, isProjection = false) {
+  updateSpending(amount: number, isProjection: boolean = false): void {
     if (isProjection) {
       this.projectedSpending = amount;
     } else {
@@ -218,7 +294,7 @@ export default class Budget {
   /**
    * Add spending to current amount
    */
-  addSpending(amount) {
+  addSpending(amount: number): Budget {
     this.currentSpending += amount;
     this.remainingAmount = this.calculateRemainingAmount();
     this.percentageUsed = this.calculatePercentageUsed();
@@ -233,10 +309,10 @@ export default class Budget {
   /**
    * Check and trigger alerts based on spending
    */
-  checkAlerts() {
+  checkAlerts(): any[] {
     if (!this.alertsEnabled) return [];
     
-    const triggeredAlerts = [];
+    const triggeredAlerts: any[] = [];
     
     this.alertThresholds.forEach(threshold => {
       if (this.percentageUsed >= threshold.percentage && !threshold.triggered) {
@@ -267,7 +343,7 @@ export default class Budget {
   /**
    * Generate alert message based on threshold
    */
-  generateAlertMessage(threshold) {
+  generateAlertMessage(threshold: any): string {
     const percentage = Math.round(this.percentageUsed);
     
     switch (threshold.type) {
@@ -288,7 +364,7 @@ export default class Budget {
   /**
    * Reset alerts for new period
    */
-  resetAlerts() {
+  resetAlerts(): void {
     this.alertThresholds.forEach(threshold => {
       threshold.triggered = false;
       delete threshold.triggeredAt;
@@ -299,30 +375,30 @@ export default class Budget {
   /**
    * Check if budget is exceeded
    */
-  isExceeded() {
+  isExceeded(): boolean {
     return this.currentSpending > this.effectiveAmount;
   }
 
   /**
    * Check if budget is close to limit
    */
-  isCloseToLimit(threshold = 90) {
+  isCloseToLimit(threshold: number = 90): boolean {
     return this.percentageUsed >= threshold;
   }
 
   /**
    * Calculate overshoot amount
    */
-  getOvershootAmount() {
+  getOvershootAmount(): number {
     return Math.max(0, this.currentSpending - this.effectiveAmount);
   }
 
   /**
    * Calculate daily average spending
    */
-  getDailyAverage() {
-    const start = new Date(this.startDate);
-    const end = new Date(this.endDate);
+  getDailyAverage(): number {
+    const start = new Date(this.startDate).getTime();
+    const end = new Date(this.endDate).getTime();
     const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     
     return days > 0 ? this.currentSpending / days : 0;
@@ -331,10 +407,10 @@ export default class Budget {
   /**
    * Calculate required daily spending to stay on track
    */
-  getRequiredDailySpending() {
-    const start = new Date(this.startDate);
-    const end = new Date(this.endDate);
-    const today = new Date();
+  getRequiredDailySpending(): number {
+    const start = new Date(this.startDate).getTime();
+    const end = new Date(this.endDate).getTime();
+    const today = new Date().getTime();
     
     const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     const daysPassed = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
@@ -348,7 +424,7 @@ export default class Budget {
   /**
    * Add adjustment to budget
    */
-  addAdjustment(amount, reason = '') {
+  addAdjustment(amount: number, reason: string = ''): Budget {
     this.adjustments += amount;
     this.effectiveAmount = this.calculateEffectiveAmount();
     this.remainingAmount = this.calculateRemainingAmount();
@@ -363,7 +439,7 @@ export default class Budget {
   /**
    * Enable rollover from previous budget
    */
-  enableRollover(previousBudget) {
+  enableRollover(previousBudget: Budget): Budget {
     if (!previousBudget || !previousBudget.isActive) return this;
     
     const previousRemaining = previousBudget.remainingAmount;
@@ -383,7 +459,7 @@ export default class Budget {
   /**
    * Archive this period and create new period
    */
-  archiveAndCreateNext() {
+  archiveAndCreateNext(): Budget {
     // Archive current period
     this.isActive = false;
     this.updatedAt = new Date().toISOString();
@@ -392,8 +468,8 @@ export default class Budget {
     const nextBudget = new Budget({
       ...this.toJSON(),
       id: uuidv4(),
-      startDate: this.getPeriodStartDate(this.endDate),
-      endDate: this.getPeriodEndDate(this.endDate),
+      startDate: this.getPeriodStartDate(new Date(this.endDate)),
+      endDate: this.getPeriodEndDate(new Date(this.endDate)),
       currentSpending: 0,
       projectedSpending: 0,
       alertHistory: [],
@@ -414,7 +490,7 @@ export default class Budget {
   /**
    * Get budget summary for display
    */
-  getSummary() {
+  getSummary(): any {
     return {
       id: this.id,
       name: this.name,
@@ -443,7 +519,7 @@ export default class Budget {
   /**
    * Validate budget data
    */
-  validate() {
+  validate(): { isValid: boolean; errors: string[] } {
     const errors = [];
     
     if (!this.name.trim()) {
@@ -475,7 +551,7 @@ export default class Budget {
   /**
    * Convert to plain object for storage
    */
-  toJSON() {
+  toJSON(): any {
     return {
       id: this.id,
       createdAt: this.createdAt,
@@ -531,14 +607,14 @@ export default class Budget {
   /**
    * Create Budget instance from JSON data
    */
-  static fromJSON(data) {
+  static fromJSON(data: any): Budget {
     return new Budget(data);
   }
 
   /**
    * Create default overall budget
    */
-  static createDefault(amount = 100, currency = 'USD') {
+  static createDefault(amount: number = 100, currency: string = 'USD'): Budget {
     return new Budget({
       name: 'Overall Monthly Budget',
       description: 'Total spending limit for all subscriptions',
@@ -555,7 +631,7 @@ export default class Budget {
   /**
    * Create category-specific budget
    */
-  static createForCategory(category, amount, period = BudgetPeriod.MONTHLY) {
+  static createForCategory(category: any, amount: number, period: string = BudgetPeriod.MONTHLY): Budget {
     return new Budget({
       name: `${category.name} Budget`,
       description: `Budget for ${category.name} subscriptions`,
@@ -569,6 +645,3 @@ export default class Budget {
     });
   }
 }
-
-// Export constants
-export { AlertThreshold, AlertType, BudgetPeriod, BudgetType };

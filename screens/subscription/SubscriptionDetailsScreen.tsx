@@ -2,21 +2,20 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    ScrollView,
-    Share,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // Hooks
-import { useCurrency } from '@hooks/useCurrency';
 import { useSubscriptions } from '@hooks/useSubscriptions';
 
 // Utilities
-import { formatCurrency } from '@utils/currencyHelpers';
+import currencyHelpers from '@utils/currencyHelpers';
 
 // Types
 import Subscription from '@models/Subscription';
@@ -32,7 +31,6 @@ const SubscriptionDetailsScreen: React.FC = () => {
   const { subscriptionId } = route.params as SubscriptionDetailsScreenRouteParams;
   
   const { subscriptions, deleteSubscription } = useSubscriptions();
-  const { formatAmount } = useCurrency();
   
   const [isLoading, setIsLoading] = useState(true);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -79,7 +77,7 @@ const SubscriptionDetailsScreen: React.FC = () => {
       const shareContent = {
         title: subscription.name,
         message: `Check out my ${subscription.name} subscription:\n\n` +
-                `Amount: ${formatCurrency(subscription.amount, subscription.currency)}\n` +
+                `Amount: ${currencyHelpers.formatAmount(subscription.amount, subscription.currency)}\n` +
                 `Billing: ${subscription.billingCycle}\n` +
                 `Category: ${subscription.category}`,
       };
@@ -144,7 +142,7 @@ const SubscriptionDetailsScreen: React.FC = () => {
           <MaterialCommunityIcons name="information" size={24} color="#007AFF" />
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Amount</Text>
-            <Text style={styles.infoValue}>{formatCurrency(subscription.amount, subscription.currency)}</Text>
+            <Text style={styles.infoValue}>{currencyHelpers.formatAmount(subscription.amount, subscription.currency)}</Text>
           </View>
         </View>
 
@@ -160,11 +158,11 @@ const SubscriptionDetailsScreen: React.FC = () => {
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Monthly Cost</Text>
-            <Text style={styles.statValue}>{formatCurrency(subscription.amount, subscription.currency)}</Text>
+            <Text style={styles.statValue}>{currencyHelpers.formatAmount(subscription.amount, subscription.currency)}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Total Spent</Text>
-            <Text style={styles.statValue}>{formatCurrency(totalSpent, subscription.currency)}</Text>
+            <Text style={styles.statValue}>{currencyHelpers.formatAmount(totalSpent, subscription.currency)}</Text>
           </View>
         </View>
 

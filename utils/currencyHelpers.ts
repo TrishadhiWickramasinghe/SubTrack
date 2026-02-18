@@ -292,7 +292,11 @@ class CurrencyHelpers {
    * Get currency information
    */
   getCurrencyInfo(code: CurrencyCode): Currency {
-    return CURRENCIES[code] || {
+    const currency = Array.isArray(CURRENCIES) 
+      ? (CURRENCIES as any[]).find(c => c.code === code)
+      : (CURRENCIES as Record<string, Currency>)[code];
+    
+    return currency || {
       code,
       name: code,
       symbol: code,
@@ -305,7 +309,7 @@ class CurrencyHelpers {
    * Get all supported currencies
    */
   getAllCurrencies(): Currency[] {
-    return Object.values(CURRENCIES);
+    return Array.isArray(CURRENCIES) ? (CURRENCIES as any[] as Currency[]) : Object.values(CURRENCIES as Record<string, Currency>);
   }
 
   /**
@@ -313,9 +317,10 @@ class CurrencyHelpers {
    */
   getPopularCurrencies(): Currency[] {
     const popularCodes: CurrencyCode[] = ['USD', 'EUR', 'GBP', 'JPY', 'LKR'];
+    const allCurrencies = this.getAllCurrencies();
     return popularCodes
-      .map(code => CURRENCIES[code])
-      .filter(currency => currency !== undefined);
+      .map(code => allCurrencies.find(c => c.code === code))
+      .filter((currency): currency is Currency => currency !== undefined);
   }
 
   /**
@@ -481,7 +486,9 @@ class CurrencyHelpers {
     // Format all values
     const formatted: Record<string, string> = {};
     Object.entries(byCurrency).forEach(([currency, amount]) => {
-      formatted[currency] = this.formatAmount(amount, currency as CurrencyCode);
+      if (amount !== undefined) {
+        formatted[currency] = this.formatAmount(amount, currency as CurrencyCode);
+      }
     });
     formatted.total = this.formatAmount(total, baseCurrency);
 
