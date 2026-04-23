@@ -5,6 +5,7 @@
 
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { authService } from '../services/supabase/auth';
 
 export interface User {
   id: string;
@@ -37,21 +38,21 @@ export const useAuth = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // TODO: Implement with actual Supabase session check
-        // const session = await authService.getSession();
-        // if (session?.user) {
-        //   setAuthState({
-        //     user: session.user as User,
-        //     isAuthenticated: true,
-        //     isLoading: false,
-        //     error: null,
-        //   });
-        // } else {
-        setAuthState((prev) => ({
-          ...prev,
-          isLoading: false,
-        }));
-        // }
+        // Check for existing Supabase session
+        const response = await authService.getCurrentUser();
+        if (response.data) {
+          setAuthState({
+            user: response.data,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } else {
+          setAuthState((prev) => ({
+            ...prev,
+            isLoading: false,
+          }));
+        }
       } catch (error) {
         setAuthState((prev) => ({
           ...prev,
@@ -72,18 +73,21 @@ export const useAuth = () => {
       try {
         setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-        // TODO: Implement with actual Supabase signUp
-        // const response = await authService.signUp(email, password, fullName);
-        // if (response.error) {
-        //   throw new Error(response.error.message);
-        // }
+        // Call Supabase signUp
+        const response = await authService.signUp(email, password, fullName);
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
 
-        // Simulate successful signup
+        if (!response.data) {
+          throw new Error('Sign up failed - no user data returned');
+        }
+
         const newUser: User = {
-          id: Math.random().toString(),
-          email,
-          fullName,
-          createdAt: new Date().toISOString(),
+          id: response.data.id,
+          email: response.data.email,
+          fullName: response.data.full_name || fullName,
+          createdAt: response.data.created_at,
         };
 
         setAuthState({
@@ -115,18 +119,21 @@ export const useAuth = () => {
       try {
         setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-        // TODO: Implement with actual Supabase signIn
-        // const response = await authService.signIn(email, password);
-        // if (response.error) {
-        //   throw new Error(response.error.message);
-        // }
+        // Call Supabase signIn
+        const response = await authService.signIn(email, password);
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
 
-        // Simulate successful signin
+        if (!response.data) {
+          throw new Error('Sign in failed - no user data returned');
+        }
+
         const user: User = {
-          id: Math.random().toString(),
-          email,
-          fullName: 'User',
-          createdAt: new Date().toISOString(),
+          id: response.data.id,
+          email: response.data.email,
+          fullName: response.data.full_name || '',
+          createdAt: response.data.created_at,
         };
 
         setAuthState({
@@ -157,8 +164,11 @@ export const useAuth = () => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-      // TODO: Implement with actual Supabase signOut
-      // await authService.signOut();
+      // Call Supabase signOut
+      const response = await authService.signOut();
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
 
       setAuthState(initialState);
       router.replace('/auth/welcome');

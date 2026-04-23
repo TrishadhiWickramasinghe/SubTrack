@@ -1,17 +1,17 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { authService } from '../services/supabase/auth';
 
 export default function Index() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Check authentication status from Supabase session
+    // Check authentication status from Supabase session
     const checkAuth = async () => {
       try {
-        // const session = await authService.getSession();
-        // setIsAuthenticated(!!session);
-        setIsAuthenticated(false); // Start with auth required
+        const response = await authService.getCurrentUser();
+        setIsAuthenticated(!!response.data);
       } catch (error) {
         setIsAuthenticated(false);
       } finally {
